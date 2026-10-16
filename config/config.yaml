@@ -2,7 +2,7 @@
 
 general:
   base_currency: "PLN"
-  default_bankroll: 10000.0
+  default_bankroll: 50.0
 
 leagues:
   - id: "laliga"

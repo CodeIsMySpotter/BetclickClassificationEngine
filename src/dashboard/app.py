@@ -83,8 +83,8 @@ st.caption("Quant Strategy: Poisson GLM (93%) + LightGBM (7%) • Quarter-Kelly 
 st.sidebar.header("⚙️ Parametry Decyzyjne")
 config = load_config()
 
-default_bankroll = float(config.get("general", {}).get("default_bankroll", 10000.0))
-bankroll = st.sidebar.number_input("Twój Bankroll (PLN)", min_value=100.0, max_value=1_000_000.0, value=default_bankroll, step=500.0)
+default_bankroll = float(config.get("general", {}).get("default_bankroll", 50.0))
+bankroll = st.sidebar.number_input("Twój Bankroll (PLN)", min_value=10.0, max_value=100_000.0, value=default_bankroll, step=10.0, help="Twój całkowity budżet przeznaczony na grę (np. 50 zł)")
 
 min_ev_input = st.sidebar.slider("Minimalny Próg EV (%)", min_value=0.0, max_value=25.0, value=float(config.get("strategy", {}).get("min_ev", 0.05)) * 100, step=1.0) / 100.0
 
@@ -166,7 +166,7 @@ df["is_actionable"] = (
     (eval_prob >= min_win_prob_input)
 )
 
-# Dynamiczny Quarter Kelly pod wybrany rynek inwestycyjny
+# Dynamiczny Quarter Kelly pod wybrany rynek inwestycyjny (z uwzględnieniem minimalnej stawki w Betclic = 1-2 zł)
 def calc_stake(row):
     if not row["is_actionable"]:
         return 0.0, 0.0
@@ -174,8 +174,15 @@ def calc_stake(row):
     odd = row.get("rec_odd", row["odds_home"])
     b = (odd * tax_multiplier) - 1.0
     full_k = ev / b if b > 0 else 0.0
-    adj_k = min(0.035, full_k * 0.25)
-    return round(adj_k * 100, 2), round(adj_k * bankroll, 2)
+    # Przy małym bankrollu (np. 50 zł) pozwalamy na stawkę 2-5 zł (4-10% banku), żeby kupon był przyjmowany przez Betclic (min. 1-2 zł)
+    max_risk_cap = 0.08 if bankroll <= 100.0 else 0.035
+    adj_k = min(max_risk_cap, full_k * 0.25)
+    stake_pln = round(adj_k * bankroll, 2)
+    # Betclic wymaga minimum 1.00 zł na kupon
+    if stake_pln < 1.0 and bankroll >= 10.0:
+        stake_pln = 1.0
+        adj_k = 1.0 / bankroll
+    return round(adj_k * 100, 2), stake_pln
 
 res = df.apply(calc_stake, axis=1)
 df["stake_pct_calc"] = [r[0] for r in res]
@@ -230,8 +237,13 @@ with tab_parlays:
                 with pc2:
                     st.info(f"**Noga 2:** [{p['leg2']['league']}] **{p['leg2']['match']}**\n\n🎯 Typ: **{p['leg2']['market']}** (Kurs: {p['leg2']['odd']:.2f} | Szansa: {p['leg2']['prob']*100:.1f}%)")
                 with pc3:
-                    parlay_stake = round((p['stake_pct'] / 100.0) * bankroll, 2)
-                    st.metric("Rekomendowana Stawka", f"{parlay_stake:.2f} PLN", f"{p['stake_pct']}% banku")
+                    parlay_pct = p['stake_pct']
+                    if bankroll <= 100.0:
+                        parlay_stake = max(2.0, round((parlay_pct / 100.0) * bankroll, 2))
+                        parlay_pct = round((parlay_stake / bankroll) * 100.0, 1)
+                    else:
+                        parlay_stake = round((parlay_pct / 100.0) * bankroll, 2)
+                    st.metric("Rekomendowana Stawka", f"{parlay_stake:.2f} PLN", f"{parlay_pct}% banku")
                     potential_win = round(parlay_stake * p['combined_odds'], 2)
                     st.caption(f"Potencjalna wygrana: **{potential_win:.2f} PLN**")
                 st.markdown("---")
