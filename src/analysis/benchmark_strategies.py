@@ -133,13 +133,13 @@ def run_comprehensive_benchmark():
             pnl = (flat_stake * (odd_h - 1.0)) if win else -flat_stake
             portfolio_baseline.append({"date": row["match_date"], "win": win, "pnl": pnl, "stake": flat_stake, "odd": odd_h})
 
-        # 3. Capital Preservation Singles
+        # 3. Capital Preservation Singles z filtrem pułapek kursowych (0.04 <= EV <= 0.18)
         candidates = []
-        if prob_1x >= 0.70 and (1.15 <= odd_1x <= 1.85) and ev_1x >= 0.03:
+        if prob_1x >= 0.70 and (1.15 <= odd_1x <= 1.85) and (0.04 <= ev_1x <= 0.18):
             candidates.append({"type": "1X", "odd": odd_1x, "prob": prob_1x, "ev": ev_1x})
-        if prob_dnb >= 0.70 and (1.15 <= odd_dnb <= 1.85) and ev_dnb >= 0.03:
+        if prob_dnb >= 0.70 and (1.15 <= odd_dnb <= 1.85) and (0.04 <= ev_dnb <= 0.18):
             candidates.append({"type": "DNB", "odd": odd_dnb, "prob": prob_dnb, "ev": ev_dnb})
-        if prob_h >= 0.70 and (1.15 <= odd_h <= 1.85) and ev_h >= 0.03:
+        if prob_h >= 0.70 and (1.15 <= odd_h <= 1.85) and (0.04 <= ev_h <= 0.18):
             candidates.append({"type": "1", "odd": odd_h, "prob": prob_h, "ev": ev_h})
 
         if candidates:
@@ -226,7 +226,7 @@ def run_comprehensive_benchmark():
 
     def calc_metrics(bets_list: list, name: str) -> dict:
         if not bets_list:
-            return {"name": name, "count": 0, "win_rate": 0, "survival_rate": 0, "total_pnl": 0, "roi": 0, "max_dd": 0, "sharpe": 0, "avg_odd": 0}
+            return {"name": name, "count": 0, "win_rate": 0, "survival_rate": 0, "total_pnl": 0, "roi": 0, "max_dd": 0, "sharpe": 0, "avg_odd": 0, "time_str": "Brak"}
         df_b = pd.DataFrame(bets_list)
         total_pnl = df_b["pnl"].sum()
         total_stake = df_b["stake"].sum()
@@ -236,6 +236,14 @@ def run_comprehensive_benchmark():
         draw_refunds = len(df_b[df_b["win"] == 0.5])
         clean_win_rate = (wins_count / len(df_b)) * 100.0
         capital_survival_rate = ((wins_count + draw_refunds) / len(df_b)) * 100.0
+
+        # Czas trwania sesji
+        s_date = pd.to_datetime(df_b["date"].min()).date()
+        e_date = pd.to_datetime(df_b["date"].max()).date()
+        days = (e_date - s_date).days
+        months = max(1.0, round(days / 30.4375, 1))
+        years = max(0.1, round(days / 365.25, 2))
+        avg_per_month = round(len(df_b) / months, 1)
 
         df_b["cum_pnl"] = df_b["pnl"].cumsum()
         df_b["peak"] = df_b["cum_pnl"].cummax()
@@ -254,7 +262,13 @@ def run_comprehensive_benchmark():
             "roi": roi,
             "max_dd": max_dd,
             "sharpe": sharpe,
-            "avg_odd": df_b["odd"].mean()
+            "avg_odd": df_b["odd"].mean(),
+            "s_date": str(s_date),
+            "e_date": str(e_date),
+            "days": days,
+            "months": months,
+            "years": years,
+            "avg_per_month": avg_per_month
         }
 
     m1 = calc_metrics(portfolio_high_risk, "1. Wysokie kursy (Odds > 3.0, czysta 1)")
@@ -264,16 +278,18 @@ def run_comprehensive_benchmark():
 
     bench_df = pd.DataFrame([m1, m2, m3, m4])
     
-    print("\n" + "=" * 95)
+    print("\n" + "=" * 98)
     print("INSTYTUCJONALNY BENCHMARK STRATEGII (Out-of-Time Walk-Forward 2022-2026)")
-    print("=" * 95)
+    print(f"Horyzont czasowy calego zbioru: {df['match_date'].min().strftime('%Y-%m-%d')} do {df['match_date'].max().strftime('%Y-%m-%d')} (~3.8 roku, 1520 meczow)")
+    print("=" * 98)
     for _, r in bench_df.iterrows():
         print(f"[*] STRATEGIA: {r['name']}")
-        print(f"   Liczba zawartych zakladow: {r['count']} | Sredni kurs: {r['avg_odd']:.2f}")
+        print(f"   Czas trwania sesji: {r['s_date']} do {r['e_date']} ({r['days']} dni | {r['months']} mies. | {r['years']} roku)")
+        print(f"   Liczba zawartych zakladow: {r['count']} (sr. {r['avg_per_month']} zakl./mies.) | Sredni kurs: {r['avg_odd']:.2f}")
         print(f"   Skutecznosc (Win Rate): {r['win_rate']:.1f}% | Brak straty kapitalu (Win + Zwrot): {r['survival_rate']:.1f}%")
         print(f"   Laczny Wynik Finansowy: {r['total_pnl']:+.2f} j. | Zwrot z Inwestycji (ROI): {r['roi']:+.2f}%")
         print(f"   Maksymalne obsuniecie (Max Drawdown): {r['max_dd']:.2f} j. | Sharpe Ratio: {r['sharpe']:.2f}\n")
-    print("=" * 95 + "\n")
+    print("=" * 98 + "\n")
     return bench_df
 
 

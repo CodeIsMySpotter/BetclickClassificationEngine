@@ -103,13 +103,13 @@ def run_micro_bankroll_benchmark(initial_bankroll: float = 50.0, stake_pln: floa
         if odd_h >= 3.0 and ev_h >= 0.05:
             win = 1 if ftr == "H" else 0
             pnl = (stake_pln * (odd_h - 1.0)) if win else -stake_pln
-            p_high.append({"win": win, "pnl": pnl, "stake": stake_pln, "odd": odd_h})
+            p_high.append({"date": row["match_date"], "win": win, "pnl": pnl, "stake": stake_pln, "odd": odd_h})
 
         # 2. Baseline
         if ev_h >= 0.05:
             win = 1 if ftr == "H" else 0
             pnl = (stake_pln * (odd_h - 1.0)) if win else -stake_pln
-            p_baseline.append({"win": win, "pnl": pnl, "stake": stake_pln, "odd": odd_h})
+            p_baseline.append({"date": row["match_date"], "win": win, "pnl": pnl, "stake": stake_pln, "odd": odd_h})
 
         # 3. Capital Preservation Singles z filtrem pułapek kursowych (0.04 <= EV <= 0.18)
         candidates = []
@@ -143,7 +143,7 @@ def run_micro_bankroll_benchmark(initial_bankroll: float = 50.0, stake_pln: floa
                 pnl = (stake_pln * (b_odd - 1.0)) if win else -stake_pln
 
             single_match = {
-                "win": win, "pnl": pnl, "stake": stake_pln, "odd": b_odd,
+                "date": row["match_date"], "win": win, "pnl": pnl, "stake": stake_pln, "odd": b_odd,
                 "prob": best["prob"], "ev": best["ev"]
             }
             p_singles.append(single_match)
@@ -156,6 +156,7 @@ def run_micro_bankroll_benchmark(initial_bankroll: float = 50.0, stake_pln: floa
             comb_odd = round(c1["odd"] * c2["odd"], 2)
             comb_prob = round(c1["prob"] * c2["prob"], 4)
             comb_ev = (comb_prob * comb_odd) - 1.0
+            comb_date = max(c1["date"], c2["date"])
 
             if 1.45 <= comb_odd <= 2.20 and comb_ev >= 0.05:
                 w1 = c1["win"]
@@ -177,7 +178,7 @@ def run_micro_bankroll_benchmark(initial_bankroll: float = 50.0, stake_pln: floa
                     win_parlay = 0
 
                 p_parlays.append({
-                    "win": win_parlay, "pnl": pnl_parlay, "stake": stake_pln, "odd": comb_odd
+                    "date": comb_date, "win": win_parlay, "pnl": pnl_parlay, "stake": stake_pln, "odd": comb_odd
                 })
 
         # Aktualizacja stanu
@@ -191,6 +192,13 @@ def run_micro_bankroll_benchmark(initial_bankroll: float = 50.0, stake_pln: floa
         teams_xg_f.setdefault(a_team, []).append(float(row["away_xg"]))
         teams_xg_a.setdefault(a_team, []).append(float(row["home_xg"]))
 
+    # Statystyki horyzontu czasowego całego zbioru
+    global_start = pd.to_datetime(df["match_date"].min()).date()
+    global_end = pd.to_datetime(df["match_date"].max()).date()
+    global_days = (global_end - global_start).days
+    global_months = round(global_days / 30.4375, 1)
+    global_years = round(global_days / 365.25, 2)
+
     def evaluate(records: list, label: str):
         if not records:
             return
@@ -198,6 +206,17 @@ def run_micro_bankroll_benchmark(initial_bankroll: float = 50.0, stake_pln: floa
         df_r["cum_pnl"] = df_r["pnl"].cumsum()
         df_r["balance"] = initial_bankroll + df_r["cum_pnl"]
         
+        # Daty i horyzont czasowy
+        s_date = pd.to_datetime(df_r["date"].min()).date()
+        e_date = pd.to_datetime(df_r["date"].max()).date()
+        strat_days = (e_date - s_date).days
+        strat_months = max(1.0, round(strat_days / 30.4375, 1))
+        strat_years = max(0.1, round(strat_days / 365.25, 2))
+
+        # Tempo gry
+        avg_per_month = round(len(df_r) / strat_months, 1)
+        avg_per_week = round(len(df_r) / max(1.0, (strat_days / 7.0)), 1)
+
         # Max Drawdown w PLN
         df_r["peak"] = df_r["cum_pnl"].cummax()
         df_r["drawdown"] = df_r["cum_pnl"] - df_r["peak"]
@@ -214,22 +233,40 @@ def run_micro_bankroll_benchmark(initial_bankroll: float = 50.0, stake_pln: floa
         busted = min_balance_reached <= 0
 
         print(f"[*] {label.upper()}")
-        print(f"    Zawarte zakłady: {len(df_r)} kuponów po {stake_pln:.2f} PLN")
+        print(f"    Czas trwania sesji: {s_date} do {e_date} ({strat_days} dni | {strat_months} mies. | {strat_years} roku)")
+        print(f"    Zawarte zakłady: {len(df_r)} kuponów po {stake_pln:.2f} PLN (Średnio {avg_per_month} kuponów/mies. ~ {avg_per_week} kuponu/tydz.)")
         print(f"    Obrót łącznie: {total_turnover:.2f} PLN | Skuteczność (Win Rate): {win_rate:.1f}%")
         print(f"    Ochrona przed stratą (Win + Zwrot): {survival_rate:.1f}%")
         print(f"    Stan konta końcowy: {initial_bankroll + total_profit:.2f} PLN (Start: {initial_bankroll:.2f} PLN)")
         print(f"    Czysty zysk: {total_profit:+.2f} PLN | Stopa zwrotu z kapitału: {roi_capital:+.1f}%")
-        print(f"    Najniższy stan konta w trakcie gry: {min_balance_reached:.2f} PLN")
-        print(f"    Czy zbankrutował (Bust risk)? -> {'TAK! BANKRUT' if busted else 'NIE (Portfel przetrwał!)'}\n")
+        print(f"    Najniższy stan konta w trakcie gry: {min_balance_reached:.2f} PLN (Maksymalne obsunięcie: {max_dd_pln:+.2f} PLN)")
+        
+        if busted:
+            bust_rows = df_r[df_r["balance"] <= 0]
+            if not bust_rows.empty:
+                first_bust = bust_rows.iloc[0]
+                b_date = pd.to_datetime(first_bust["date"]).date()
+                b_days = (b_date - s_date).days
+                b_idx = int(bust_rows.index[0]) + 1
+                print(f"    Status kapitału: [X] BANKRUT! Portfel wyzerowany po {b_days} dniach ({b_date}) przy kuponie #{b_idx}\n")
+            else:
+                print("    Status kapitału: [X] BANKRUT! Portfel wyzerowany w trakcie sesji\n")
+        else:
+            monthly_pnl = total_profit / strat_months
+            cagr = ((1.0 + (total_profit / initial_bankroll)) ** (1.0 / strat_years) - 1.0) * 100.0
+            print(f"    Średni zysk miesięczny: {monthly_pnl:+.2f} PLN/miesiąc | Roczna stopa CAGR: {cagr:+.1f}%")
+            print(f"    Status kapitału: [V] PRZETRWAŁ! Pełna ochrona kapitału przez {strat_years} roku bez bankructwa\n")
 
-    print("\n" + "=" * 90)
-    print(f"BENCHMARK MIKRO-PORTFELA: START = {initial_bankroll:.2f} PLN (Stawka = {stake_pln:.2f} PLN / kupon)")
-    print("=" * 90)
+    print("\n" + "=" * 96)
+    print(f"BENCHMARK MIKRO-PORTFELA: START = {initial_bankroll:.2f} PLN (Stawka płaska = {stake_pln:.2f} PLN / kupon)")
+    print(f"HORYZONT CZASOWY CAŁEJ SESJI: {global_start} do {global_end} ({global_days} dni | ~{global_months} miesięcy | {global_years} roku)")
+    print("Symulacja walk-forward na 1520 realnych meczach z 3 czołowych lig europejskich")
+    print("=" * 96)
     evaluate(p_high, "1. Wysokie kursy (> 3.0)")
     evaluate(p_baseline, "2. Baseline (Czysta 1)")
     evaluate(p_singles, "3. Capital Preservation Singles (1X / DNB)")
     evaluate(p_parlays, "4. Optymalne Duble (2-Leg Parlay Dixon-Coles)")
-    print("=" * 90 + "\n")
+    print("=" * 96 + "\n")
 
 
 if __name__ == "__main__":
