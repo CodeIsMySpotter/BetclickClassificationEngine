@@ -185,7 +185,42 @@ with col4:
 st.markdown("---")
 
 # Zakładki
-tab_bets, tab_all, tab_visuals = st.tabs(["🎯 Rekomendacje do zagrania", "📋 Pełna tabela spotkań", "📊 Wykresy i Rozkłady"])
+tab_bets, tab_parlays, tab_all, tab_visuals = st.tabs([
+    "🎯 Rekomendacje Pojedyncze (Single)",
+    "⚡ Duble Inwestycyjne (2-Leg Parlay)",
+    "📋 Pełna tabela spotkań",
+    "📊 Wykresy i Rozkłady"
+])
+
+PARLAYS_JSON = ARTIFACTS_DIR / "optimal_parlays.json"
+
+with tab_parlays:
+    st.subheader("⚡ Generator Optymalnych Dubli Inwestycyjnych (2-Leg Parlay)")
+    st.caption("Łączenie dwóch niezależnych spotkań o bardzo wysokiej pewności (np. Arsenal + Leverkusen) w celu multiplikacji zysku przy zachowaniu szansy sukcesu > 75%")
+
+    if PARLAYS_JSON.exists():
+        with open(PARLAYS_JSON, "r", encoding="utf-8") as f:
+            parlays_data = json.load(f)
+    else:
+        parlays_data = []
+
+    if not parlays_data:
+        st.info("Brak wygenerowanych parlayów. Kliknij 'Odśwież kursy z Betclic na żywo' w pasku bocznym.")
+    else:
+        for idx, p in enumerate(parlays_data, start=1):
+            with st.container():
+                st.markdown(f"#### **Dubel #{idx}: Kurs Łączny {p['combined_odds']:.2f}** | Pewność Kuponu: **{p['combined_prob']*100:.1f}%** | EV: **{p['ev']*100:+.1f}%**")
+                pc1, pc2, pc3 = st.columns([4, 4, 3])
+                with pc1:
+                    st.info(f"**Noga 1:** [{p['leg1']['league']}] **{p['leg1']['match']}**\n\n🎯 Typ: **{p['leg1']['market']}** (Kurs: {p['leg1']['odd']:.2f} | Szansa: {p['leg1']['prob']*100:.1f}%)")
+                with pc2:
+                    st.info(f"**Noga 2:** [{p['leg2']['league']}] **{p['leg2']['match']}**\n\n🎯 Typ: **{p['leg2']['market']}** (Kurs: {p['leg2']['odd']:.2f} | Szansa: {p['leg2']['prob']*100:.1f}%)")
+                with pc3:
+                    parlay_stake = round((p['stake_pct'] / 100.0) * bankroll, 2)
+                    st.metric("Rekomendowana Stawka", f"{parlay_stake:.2f} PLN", f"{p['stake_pct']}% banku")
+                    potential_win = round(parlay_stake * p['combined_odds'], 2)
+                    st.caption(f"Potencjalna wygrana: **{potential_win:.2f} PLN**")
+                st.markdown("---")
 
 with tab_bets:
     st.subheader("🛡️ Portfel Inwestycyjny: Capital Preservation (1X / DNB / 1)")

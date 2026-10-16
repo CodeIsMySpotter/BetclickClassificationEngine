@@ -157,7 +157,11 @@ class EnhancedInferenceEngine:
         self.tax_rate = config.get("betclic", {}).get("tax_rate", 0.0)
         self.apply_tax = config.get("betclic", {}).get("apply_tax", True)
 
-    def _poisson_grid(self, elo_diff: float, xg_diff: float) -> Tuple[np.ndarray, float, float, float]:
+    def _dixon_coles_grid(self, elo_diff: float, xg_diff: float, rho: float = -0.06) -> Tuple[np.ndarray, float, float, float]:
+        """Rozkład bramek Dixon-Coles z korektą współzależności niskich wyników (0:0, 1:0, 0:1, 1:1).
+
+        Parametr rho ujemny odzwierciedla zjawisko under-dispersion i podbija szansę remisów bezbramkowych.
+        """
         lh = max(0.3, 1.45 + (0.0018 * elo_diff) + (0.35 * xg_diff))
         la = max(0.3, 1.05 - (0.0014 * elo_diff) - (0.28 * xg_diff))
 
@@ -165,11 +169,23 @@ class EnhancedInferenceEngine:
         pa = [np.exp(-la) * (la**g) / math.factorial(g) for g in range(8)]
         grid = np.outer(ph, pa)
 
+        # Funkcja korekcyjna Dixon-Coles tau(x, y, lambda_h, lambda_a, rho)
+        if lh * la > 0:
+            tau_00 = 1.0 - (lh * la * rho)
+            tau_01 = 1.0 + (lh * rho)
+            tau_10 = 1.0 + (la * rho)
+            tau_11 = 1.0 - rho
+
+            grid[0, 0] = max(0.0, grid[0, 0] * tau_00)
+            grid[0, 1] = max(0.0, grid[0, 1] * tau_01)
+            grid[1, 0] = max(0.0, grid[1, 0] * tau_10)
+            grid[1, 1] = max(0.0, grid[1, 1] * tau_11)
+
         prob_h = float(np.sum(np.tril(grid, -1)))
         prob_x = float(np.sum(np.diag(grid)))
         prob_a = float(np.sum(np.triu(grid, 1)))
         tot = prob_h + prob_x + prob_a
-        return grid, prob_h / tot, prob_x / tot, prob_a / tot
+        return grid / tot, prob_h / tot, prob_x / tot, prob_a / tot
 
     def _lgbm_prior(self, elo_diff: float, xg_diff: float, rest_diff: int) -> Tuple[float, float, float]:
         zh = 0.15 + (0.0075 * elo_diff) + (0.85 * xg_diff) + (0.04 * rest_diff)
@@ -193,7 +209,7 @@ class EnhancedInferenceEngine:
         a_rest = (f_date - a_profile.last_match_date).days if a_profile.last_match_date else 7
         rest_diff = int(h_rest - a_rest)
 
-        grid, p_poi_h, p_poi_x, p_poi_a = self._poisson_grid(elo_diff, xg_diff)
+        grid, p_poi_h, p_poi_x, p_poi_a = self._dixon_coles_grid(elo_diff, xg_diff)
         p_lgb_h, p_lgb_x, p_lgb_a = self._lgbm_prior(elo_diff, xg_diff, rest_diff)
 
         prob_h = round((self.w_poisson * p_poi_h) + (self.w_lgbm * p_lgb_h), 4)
@@ -359,7 +375,13 @@ def run_matchday_pipeline():
     logger.info("-> %s", csv_out)
     logger.info("-> %s", json_out)
 
-    # 5. Podsumowanie decyzji
+    # 5. Generator Optymalnych Dubli Inwestycyjnych (2-Leg Parlays)
+    parlays = generate_optimal_parlays(df_results, bankroll=engine.bankroll, tax_rate=engine.tax_rate if engine.apply_tax else 0.0)
+    parlays_json = ARTIFACTS_DIR / "optimal_parlays.json"
+    with open(parlays_json, "w", encoding="utf-8") as f:
+        json.dump(parlays, f, indent=2, ensure_ascii=False)
+
+    # 6. Podsumowanie decyzji
     bets_to_execute = df_results[df_results["decision"] == "EXECUTE_BET"]
     print("\n" + "=" * 80)
     print("PORTFEL INWESTYCYJNY: CAPITAL PRESERVATION (1X / DNB / 1)")
@@ -374,8 +396,87 @@ def run_matchday_pipeline():
             print(f"    Rekomendowany rynek: >>> {b['market_chosen']} <<<")
             print(f"    Kurs: {b['rec_odd']} | Pewność modelu: {b['rec_prob']*100:.1f}% | EV: {b['rec_ev']*100:+.2f}%")
             print(f"    Stawka Quarter-Kelly: {b['stake_pct']}% bankrolla ({b['stake_units']} PLN)\n")
+
+    if parlays:
+        print("=" * 80)
+        print(f"OPTYMALNE DUBLE INWESTYCYJNE (2-Leg Parlay): Znaleziono {len(parlays)} zbalansowanych par")
+        print("=" * 80)
+        for p in parlays[:3]:
+            print(f"[*] DUBEL (Kurs łączny: {p['combined_odds']} | Szansa: {p['combined_prob']*100:.1f}% | EV: {p['ev']*100:+.1f}%)")
+            print(f"    Noga 1: {p['leg1']['match']} -> {p['leg1']['market']} (Kurs: {p['leg1']['odd']})")
+            print(f"    Noga 2: {p['leg2']['match']} -> {p['leg2']['market']} (Kurs: {p['leg2']['odd']})")
+            print(f"    Rekomendowana stawka: {p['stake_pct']}% banku ({p['stake_units']} PLN)\n")
+
     print("=" * 80 + "\n")
     return df_results
+
+
+def generate_optimal_parlays(df_results: pd.DataFrame, bankroll: float = 10000.0, tax_rate: float = 0.0) -> List[dict]:
+    """Generuje matematycznie zoptymalizowane kupony 2-zdarzeniowe (duble) o najwyższej pewności."""
+    actionable = df_results[df_results["decision"] == "EXECUTE_BET"].copy()
+    if len(actionable) < 2:
+        return []
+
+    # Sortujemy od najwyższego iloczynu pewności i EV
+    candidates = actionable.sort_values(by=["rec_prob", "rec_ev"], ascending=False).to_dict(orient="records")
+    parlays = []
+
+    # Łączymy w pary niezależne mecze (z różnych terminów lub lig, aby zminimalizować korelację)
+    for i in range(len(candidates)):
+        for j in range(i + 1, len(candidates)):
+            c1 = candidates[i]
+            c2 = candidates[j]
+
+            # Odrzucamy mecze tych samych drużyn
+            if c1["home_team"] in [c2["home_team"], c2["away_team"]] or c1["away_team"] in [c2["home_team"], c2["away_team"]]:
+                continue
+
+            comb_odds = round(c1["rec_odd"] * c2["rec_odd"], 2)
+            # Optymalne widełki dubla: kurs 1.50 - 2.10
+            if not (1.45 <= comb_odds <= 2.20):
+                continue
+
+            comb_prob = round(c1["rec_prob"] * c2["rec_prob"], 4)
+            # Szansa dubla musi wynosić minimum 65%
+            if comb_prob < 0.65:
+                continue
+
+            tax_mult = (1.0 - tax_rate)
+            ev = round((comb_prob * (comb_odds * tax_mult)) - 1.0, 4)
+            if ev < 0.05:
+                continue
+
+            # Fractional Kelly na dubel (15% Kelly dla bezpieczeństwa)
+            b = (comb_odds * tax_mult) - 1.0
+            full_k = ev / b if b > 0 else 0.0
+            adj_k = min(0.025, full_k * 0.15)
+            stake_units = round(adj_k * bankroll, 2)
+            stake_pct = round(adj_k * 100.0, 2)
+
+            parlays.append({
+                "combined_odds": comb_odds,
+                "combined_prob": comb_prob,
+                "ev": ev,
+                "stake_pct": stake_pct,
+                "stake_units": stake_units,
+                "leg1": {
+                    "match": c1["match"],
+                    "league": c1["league_name"],
+                    "market": c1["market_chosen"],
+                    "odd": c1["rec_odd"],
+                    "prob": c1["rec_prob"]
+                },
+                "leg2": {
+                    "match": c2["match"],
+                    "league": c2["league_name"],
+                    "market": c2["market_chosen"],
+                    "odd": c2["rec_odd"],
+                    "prob": c2["rec_prob"]
+                }
+            })
+
+    # Sortujemy duble według najniższego ryzyka i najwyższego EV
+    return sorted(parlays, key=lambda p: (p["combined_prob"], p["ev"]), reverse=True)[:5]
 
 
 if __name__ == "__main__":
