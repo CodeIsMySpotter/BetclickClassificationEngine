@@ -4,6 +4,7 @@ Visualizes real-time Betclic fixtures, expected values (EV), Poisson score grids
 Quarter-Kelly capital allocations, and interactive bankroll risk controls.
 """
 
+import datetime
 import json
 from pathlib import Path
 import pandas as pd
