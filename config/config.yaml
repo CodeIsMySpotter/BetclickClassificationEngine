@@ -1,0 +1,53 @@
+# Konfiguracja silnika decyzyjnego Multi-League Match Intelligence & Betclic Feed
+
+general:
+  base_currency: "PLN"
+  default_bankroll: 10000.0
+
+leagues:
+  - id: "laliga"
+    name: "La Liga (Hiszpania)"
+    code: "SP1"
+    understat: "ESP-La Liga"
+    betclic_url: "https://www.betclic.pl/pilka-nozna-s1/hiszpania-la-liga-c7"
+  - id: "premier_league"
+    name: "Premier League (Anglia)"
+    code: "E0"
+    understat: "ENG-Premier League"
+    betclic_url: "https://www.betclic.pl/pilka-nozna-s1/anglia-premier-league-c3"
+  - id: "bundesliga"
+    name: "Bundesliga (Niemcy)"
+    code: "D1"
+    understat: "GER-Bundesliga"
+    betclic_url: "https://www.betclic.pl/pilka-nozna-s1/niemcy-bundesliga-c5"
+
+betclic:
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+  timeout_seconds: 10
+  # Betclic - gra bez podatku (0.0)
+  tax_rate: 0.0
+  apply_tax: true
+
+strategy:
+  # Minimalny próg EV kwalifikujący zakład (np. 0.05 = +5%)
+  min_ev: 0.05
+  # Frakcja kryterium Kelly'ego (Quarter-Kelly = 0.25)
+  kelly_fraction: 0.25
+  # Maksymalny procent bankrolla na pojedyncze zdarzenie (3.5%)
+  max_cap_pct: 0.035
+  # Widełki kursowe dla stabilnego profilu o niskiej wariancji (np. faworyci 1.20 - 2.20)
+  min_odds: 1.20
+  max_odds: 2.20
+  # Minimalne prawdopodobieństwo wygranej modelu (wysoki win-rate)
+  min_model_prob: 0.50
+  # Dozwolone rynki: ['home_only', 'home_and_dnb', 'all_positive_ev']
+  market_policy: "home_only"
+
+model_weights:
+  poisson: 0.93
+  lightgbm: 0.07
+
+paths:
+  raw_data_dir: "data/raw"
+  processed_data_dir: "data/processed"
+  artifacts_dir: "artifacts"
