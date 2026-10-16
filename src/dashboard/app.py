@@ -136,22 +136,29 @@ if selected_leagues:
 
 # Przeliczenie stawek dla bieżącego bankrolla i filtrów profilu ryzyka
 tax_multiplier = 1.0 if tax_free else 0.88
-df["current_ev"] = (df["prob_home"] * (df["odds_home"] * tax_multiplier)) - 1.0
+
+# Używamy wyselekcjonowanego rynku inwestycyjnego (1X / DNB / 1) jeśli istnieje w danych
+eval_ev = df["rec_ev"] if "rec_ev" in df.columns else ((df["prob_home"] * (df["odds_home"] * tax_multiplier)) - 1.0)
+eval_odd = df["rec_odd"] if "rec_odd" in df.columns else df["odds_home"]
+eval_prob = df["rec_prob"] if "rec_prob" in df.columns else df["prob_home"]
+
+df["current_ev"] = eval_ev
 
 # Warunek decyzyjny łączący EV + Widełki kursowe + Minimalną szansę sukcesu
 df["is_actionable"] = (
-    (df["current_ev"] >= min_ev_input) &
-    (df["odds_home"] >= odds_range[0]) &
-    (df["odds_home"] <= odds_range[1]) &
-    (df["prob_home"] >= min_win_prob_input)
+    (eval_ev >= min_ev_input) &
+    (eval_odd >= odds_range[0]) &
+    (eval_odd <= odds_range[1]) &
+    (eval_prob >= min_win_prob_input)
 )
 
-# Dynamiczny Quarter Kelly
+# Dynamiczny Quarter Kelly pod wybrany rynek inwestycyjny
 def calc_stake(row):
     if not row["is_actionable"]:
         return 0.0, 0.0
     ev = row["current_ev"]
-    b = (row["odds_home"] * tax_multiplier) - 1.0
+    odd = row.get("rec_odd", row["odds_home"])
+    b = (odd * tax_multiplier) - 1.0
     full_k = ev / b if b > 0 else 0.0
     adj_k = min(0.035, full_k * 0.25)
     return round(adj_k * 100, 2), round(adj_k * bankroll, 2)
