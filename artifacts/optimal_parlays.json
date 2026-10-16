@@ -1,37 +1,58 @@
 [
   {
-    "combined_odds": 1.6,
-    "combined_prob": 0.8191,
-    "ev": 0.3106,
+    "combined_odds": 1.49,
+    "combined_prob": 0.9027,
+    "ev": 0.345,
     "stake_pct": 2.5,
     "stake_units": 250.0,
     "leg1": {
+      "match": "Lille vs Brest",
+      "league": "Ligue 1 (Francja)",
+      "market": "1X (Win or Draw)",
+      "odd": 1.24,
+      "prob": 0.9631
+    },
+    "leg2": {
       "match": "Bayer Leverkusen vs Freiburg",
       "league": "Bundesliga (Niemcy)",
       "market": "1X (Win or Draw)",
       "odd": 1.2,
       "prob": 0.9373
+    }
+  },
+  {
+    "combined_odds": 1.49,
+    "combined_prob": 0.855,
+    "ev": 0.2739,
+    "stake_pct": 2.5,
+    "stake_units": 250.0,
+    "leg1": {
+      "match": "Lille vs Brest",
+      "league": "Ligue 1 (Francja)",
+      "market": "1X (Win or Draw)",
+      "odd": 1.24,
+      "prob": 0.9631
     },
     "leg2": {
-      "match": "Arsenal vs Everton",
-      "league": "Premier League (Anglia)",
-      "market": "Czysta wygrana (1)",
-      "odd": 1.33,
-      "prob": 0.8739
+      "match": "Toulouse vs Troyes",
+      "league": "Ligue 1 (Francja)",
+      "market": "DNB (Remis = Zwrot)",
+      "odd": 1.2,
+      "prob": 0.8878
     }
   },
   {
     "combined_odds": 1.54,
-    "combined_prob": 0.8065,
-    "ev": 0.242,
+    "combined_prob": 0.8548,
+    "ev": 0.3164,
     "stake_pct": 2.5,
     "stake_units": 250.0,
     "leg1": {
-      "match": "Brighton vs Crystal Palace",
-      "league": "Premier League (Anglia)",
+      "match": "Roma vs Genoa",
+      "league": "Serie A (Włochy)",
       "market": "DNB (Remis = Zwrot)",
       "odd": 1.16,
-      "prob": 0.9229
+      "prob": 0.9781
     },
     "leg2": {
       "match": "Arsenal vs Everton",
@@ -42,66 +63,45 @@
     }
   },
   {
-    "combined_odds": 1.55,
-    "combined_prob": 0.8007,
-    "ev": 0.2411,
+    "combined_odds": 1.59,
+    "combined_prob": 0.8545,
+    "ev": 0.3587,
     "stake_pct": 2.5,
     "stake_units": 250.0,
     "leg1": {
-      "match": "Bayer Leverkusen vs Freiburg",
-      "league": "Bundesliga (Niemcy)",
-      "market": "1X (Win or Draw)",
-      "odd": 1.2,
-      "prob": 0.9373
-    },
-    "leg2": {
-      "match": "Bournemouth vs Sunderland",
-      "league": "Premier League (Anglia)",
-      "market": "1X (Win or Draw)",
-      "odd": 1.29,
-      "prob": 0.8543
-    }
-  },
-  {
-    "combined_odds": 1.46,
-    "combined_prob": 0.7981,
-    "ev": 0.1652,
-    "stake_pct": 2.5,
-    "stake_units": 250.0,
-    "leg1": {
-      "match": "Bayer Leverkusen vs Freiburg",
-      "league": "Bundesliga (Niemcy)",
-      "market": "1X (Win or Draw)",
-      "odd": 1.2,
-      "prob": 0.9373
-    },
-    "leg2": {
-      "match": "Mainz 05 vs Werder",
-      "league": "Bundesliga (Niemcy)",
-      "market": "DNB (Remis = Zwrot)",
-      "odd": 1.22,
-      "prob": 0.8515
-    }
-  },
-  {
-    "combined_odds": 1.5,
-    "combined_prob": 0.7884,
-    "ev": 0.1826,
-    "stake_pct": 2.5,
-    "stake_units": 250.0,
-    "leg1": {
-      "match": "Brighton vs Crystal Palace",
-      "league": "Premier League (Anglia)",
+      "match": "Roma vs Genoa",
+      "league": "Serie A (Włochy)",
       "market": "DNB (Remis = Zwrot)",
       "odd": 1.16,
-      "prob": 0.9229
+      "prob": 0.9781
     },
     "leg2": {
-      "match": "Bournemouth vs Sunderland",
+      "match": "Paris FC vs Rennes",
+      "league": "Ligue 1 (Francja)",
+      "market": "1X (Win or Draw)",
+      "odd": 1.37,
+      "prob": 0.8736
+    }
+  },
+  {
+    "combined_odds": 1.49,
+    "combined_prob": 0.846,
+    "ev": 0.2605,
+    "stake_pct": 2.5,
+    "stake_units": 250.0,
+    "leg1": {
+      "match": "Lille vs Brest",
+      "league": "Ligue 1 (Francja)",
+      "market": "1X (Win or Draw)",
+      "odd": 1.24,
+      "prob": 0.9631
+    },
+    "leg2": {
+      "match": "Manchester United vs Bournemouth",
       "league": "Premier League (Anglia)",
       "market": "1X (Win or Draw)",
-      "odd": 1.29,
-      "prob": 0.8543
+      "odd": 1.2,
+      "prob": 0.8784
     }
   }
 ]

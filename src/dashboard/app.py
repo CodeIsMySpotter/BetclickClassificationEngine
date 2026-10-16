@@ -134,6 +134,19 @@ selected_leagues = st.sidebar.multiselect(
 if selected_leagues:
     df = df[df["league_name"].isin(selected_leagues)]
 
+# Filtr Horyzontu Czasowego (Mecze na Dziś / Weekend / Całość)
+time_filter = st.sidebar.radio(
+    "📅 Horyzont czasowy",
+    options=["Wszystkie nadchodzące", "Tylko DZIŚ (Mecze bieżące)", "Najbliższe 3 dni (Weekend)"],
+    index=0
+)
+today_str = datetime.date.today().strftime("%Y-%m-%d")
+if time_filter == "Tylko DZIŚ (Mecze bieżące)":
+    df = df[df["match_date"] == today_str]
+elif time_filter == "Najbliższe 3 dni (Weekend)":
+    in_3_days = (datetime.date.today() + datetime.timedelta(days=3)).strftime("%Y-%m-%d")
+    df = df[(df["match_date"] >= today_str) & (df["match_date"] <= in_3_days)]
+
 # Przeliczenie stawek dla bieżącego bankrolla i filtrów profilu ryzyka
 tax_multiplier = 1.0 if tax_free else 0.88
 
