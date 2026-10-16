@@ -1,15 +1,15 @@
-"""Quantitative Benchmark & Backtesting Module for Capital Preservation Strategy.
+"""Quantitative Benchmark & Backtesting Module for Capital Preservation and 2-Leg Parlay Strategies.
 
-Simulates walk-forward execution of:
-1. Baseline: Naive High-Risk Strategy (Czysta 1 na wszystkie mecze o kursie 4-5)
-2. Previous Benchmark: Home-Only Unfiltered Strategy
-3. Proposed Strategy: Capital Preservation Engine (1X / DNB / 1, odds 1.15 - 1.85, Win Prob >= 70%)
+Simulates walk-forward execution across 1,520 real matches (2022-2026):
+1. Baseline: Naive High-Risk Strategy (Odds > 3.0, czysta 1)
+2. Previous Benchmark: Home-Only Unfiltered Strategy (dowolne kursy, czysta 1)
+3. Capital Preservation Singles: (1X / DNB / 1, odds 1.15 - 1.85, Win Prob >= 70%)
+4. NEW: Dixon-Coles Calibrated 2-Leg Parlay Portfolio (Optymalne duble z kursem 1.45 - 2.10)
 
-Calculates institutional metrics:
-- Total Return / ROI (%)
-- Win Rate (%)
-- Maximum Drawdown (MaxDD %)
-- Profit Factor
+Calculates institutional risk-adjusted metrics:
+- Win Rate (%) & Capital Survival Rate (Win + Refund) (%)
+- Total PnL (units) & ROI (%)
+- Maximum Drawdown (MaxDD)
 - Sharpe Ratio
 """
 
@@ -32,14 +32,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 PROCESSED_DATA_DIR = BASE_DIR / "data" / "processed"
 
 
-def simulate_poisson_probabilities(elo_diff: float, xg_diff: float) -> Tuple[float, float, float]:
-    """Szybka estymacja siatki Poissona dla meczu."""
+def simulate_dixon_coles_probabilities(elo_diff: float, xg_diff: float, rho: float = -0.06) -> Tuple[float, float, float]:
+    """Estymacja Dixon-Coles z korekcją tau dla niskich wyników."""
     lh = max(0.3, 1.45 + (0.0018 * elo_diff) + (0.35 * xg_diff))
     la = max(0.3, 1.05 - (0.0014 * elo_diff) - (0.28 * xg_diff))
 
     ph = [np.exp(-lh) * (lh**g) / math.factorial(g) for g in range(8)]
     pa = [np.exp(-la) * (la**g) / math.factorial(g) for g in range(8)]
     grid = np.outer(ph, pa)
+
+    if lh * la > 0:
+        grid[0, 0] = max(0.0, grid[0, 0] * (1.0 - lh * la * rho))
+        grid[0, 1] = max(0.0, grid[0, 1] * (1.0 + lh * rho))
+        grid[1, 0] = max(0.0, grid[1, 0] * (1.0 + la * rho))
+        grid[1, 1] = max(0.0, grid[1, 1] * (1.0 - rho))
 
     prob_h = float(np.sum(np.tril(grid, -1)))
     prob_x = float(np.sum(np.diag(grid)))
@@ -54,14 +60,12 @@ def run_comprehensive_benchmark():
         raise FileNotFoundError(f"Brak pliku: {matches_file}")
 
     df = pd.read_parquet(matches_file)
-    logger.info("Wczytano %d historycznych spotkań z kursami do przeprowadzenia benchmarku.", len(df))
+    logger.info("Wczytano %d historycznych spotkań do benchmarku.", len(df))
 
-    # Wybieramy tylko mecze z kompletnymi kursami
     df = df.dropna(subset=["B365H", "B365D", "B365A", "FTHG", "FTAG", "FTR"]).copy()
     df["match_date"] = pd.to_datetime(df["match_date"])
     df = df.sort_values("match_date").reset_index(drop=True)
 
-    # Symulujemy stan Elo i formy xG w pętli bez wycieku danych (Out-of-Time)
     teams_elo: Dict[str, float] = {}
     teams_xg_f: Dict[str, List[float]] = {}
     teams_xg_a: Dict[str, List[float]] = {}
@@ -76,16 +80,14 @@ def run_comprehensive_benchmark():
         ra = np.mean(a[-window:]) if a else 1.35
         return float(rf), float(ra)
 
-    # Wyniki portfeli:
-    # 1. High-Risk Underdogs (kursy > 3.0)
-    # 2. Baseline Home-Only (wszystkie mecze z EV > 5% na 1)
-    # 3. Capital Preservation (1X / DNB / 1, kursy 1.15 - 1.85, Pewność >= 70%)
-    
     portfolio_high_risk = []
     portfolio_baseline = []
-    portfolio_preservation = []
+    portfolio_preservation_singles = []
+    
+    # Bufor kandydatów na duble w ramach danej kolejki/okna czasowego
+    gameweek_buffer: List[dict] = []
+    portfolio_parlays = []
 
-    bankroll_init = 10000.0
     flat_stake = 100.0
 
     for idx, row in df.iterrows():
@@ -107,8 +109,8 @@ def run_comprehensive_benchmark():
         a_xg_f, a_xg_a = get_rolling_xg(a_team)
         xg_diff = (h_xg_f - h_xg_a) - (a_xg_f - a_xg_a)
 
-        # Predykcja modelu
-        prob_h, prob_x, prob_a = simulate_poisson_probabilities(elo_diff, xg_diff)
+        # Predykcja Dixon-Coles
+        prob_h, prob_x, prob_a = simulate_dixon_coles_probabilities(elo_diff, xg_diff)
         prob_1x = prob_h + prob_x
         prob_dnb = prob_h / (prob_h + prob_a) if (prob_h + prob_a) > 0 else 0.5
 
@@ -119,19 +121,19 @@ def run_comprehensive_benchmark():
         ev_1x = (prob_1x * odd_1x) - 1.0
         ev_dnb = (prob_dnb * odd_dnb) - 1.0
 
-        # --- Portfel 1: High-Risk Underdogs (kursy > 3.0, EV > 5%) ---
+        # 1. High-Risk (kursy > 3.0)
         if odd_h >= 3.0 and ev_h >= 0.05:
             win = 1 if ftr == "H" else 0
             pnl = (flat_stake * (odd_h - 1.0)) if win else -flat_stake
             portfolio_high_risk.append({"date": row["match_date"], "win": win, "pnl": pnl, "stake": flat_stake, "odd": odd_h})
 
-        # --- Portfel 2: Baseline Home-Only (kursy dowolne, EV > 5% na czystą 1) ---
+        # 2. Baseline Home-Only
         if ev_h >= 0.05:
             win = 1 if ftr == "H" else 0
             pnl = (flat_stake * (odd_h - 1.0)) if win else -flat_stake
             portfolio_baseline.append({"date": row["match_date"], "win": win, "pnl": pnl, "stake": flat_stake, "odd": odd_h})
 
-        # --- Portfel 3: Capital Preservation Engine (1X / DNB / 1, kursy 1.15-1.85, Pewność >= 70%) ---
+        # 3. Capital Preservation Singles
         candidates = []
         if prob_1x >= 0.70 and (1.15 <= odd_1x <= 1.85) and ev_1x >= 0.03:
             candidates.append({"type": "1X", "odd": odd_1x, "prob": prob_1x, "ev": ev_1x})
@@ -145,6 +147,7 @@ def run_comprehensive_benchmark():
             m_type = best["type"]
             b_odd = best["odd"]
 
+            # Ocena wyniku meczu
             if m_type == "1X":
                 win = 1 if ftr in ["H", "D"] else 0
                 pnl = (flat_stake * (b_odd - 1.0)) if win else -flat_stake
@@ -162,9 +165,52 @@ def run_comprehensive_benchmark():
                 win = 1 if ftr == "H" else 0
                 pnl = (flat_stake * (b_odd - 1.0)) if win else -flat_stake
 
-            portfolio_preservation.append({
-                "date": row["match_date"], "type": m_type, "win": win, "pnl": pnl, "stake": flat_stake, "odd": b_odd
-            })
+            match_res = {
+                "date": row["match_date"], "type": m_type, "win": win, "pnl": pnl, "stake": flat_stake, "odd": b_odd,
+                "home_team": h_team, "away_team": a_team, "prob": best["prob"], "ev": best["ev"]
+            }
+            portfolio_preservation_singles.append(match_res)
+
+            # Rejestracja w buforze dubli
+            gameweek_buffer.append(match_res)
+
+        # Sprawdzamy czy w buforze mamy parę do ułożenia dubla (2 niezależne zdarzenia)
+        if len(gameweek_buffer) >= 2:
+            c1 = gameweek_buffer.pop(0)
+            c2 = gameweek_buffer.pop(0)
+
+            parlay_odd = round(c1["odd"] * c2["odd"], 2)
+            parlay_prob = round(c1["prob"] * c2["prob"], 4)
+            parlay_ev = (parlay_prob * parlay_odd) - 1.0
+
+            # Kryterium inwestycyjne dubla: kurs 1.45 - 2.10, EV > 5%
+            if 1.45 <= parlay_odd <= 2.20 and parlay_ev >= 0.05:
+                # Obliczenie wyniku dubla:
+                # Wygrana = obie nogi wygrane (win == 1)
+                # Zwrot/Częściowy zwrot jeśli jedna noga to DNB remis
+                leg1_win = c1["win"]
+                leg2_win = c2["win"]
+
+                if leg1_win == 1 and leg2_win == 1:
+                    pnl_parlay = flat_stake * (parlay_odd - 1.0)
+                    win_parlay = 1
+                elif (leg1_win == 1 and leg2_win == 0.5):
+                    # Noga 2 zwrot, wygrana z nogi 1
+                    pnl_parlay = flat_stake * (c1["odd"] - 1.0)
+                    win_parlay = 1
+                elif (leg1_win == 0.5 and leg2_win == 1):
+                    pnl_parlay = flat_stake * (c2["odd"] - 1.0)
+                    win_parlay = 1
+                elif leg1_win == 0.5 and leg2_win == 0.5:
+                    pnl_parlay = 0.0
+                    win_parlay = 0.5
+                else:
+                    pnl_parlay = -flat_stake
+                    win_parlay = 0
+
+                portfolio_parlays.append({
+                    "date": c2["date"], "win": win_parlay, "pnl": pnl_parlay, "stake": flat_stake, "odd": parlay_odd
+                })
 
         # Aktualizacja stanu po meczu
         actual_score_h = 1.0 if h_goals > a_goals else (0.5 if h_goals == a_goals else 0.0)
@@ -180,25 +226,22 @@ def run_comprehensive_benchmark():
 
     def calc_metrics(bets_list: list, name: str) -> dict:
         if not bets_list:
-            return {"name": name, "count": 0, "win_rate": 0, "roi": 0, "pnl": 0, "max_dd": 0, "sharpe": 0}
+            return {"name": name, "count": 0, "win_rate": 0, "survival_rate": 0, "total_pnl": 0, "roi": 0, "max_dd": 0, "sharpe": 0, "avg_odd": 0}
         df_b = pd.DataFrame(bets_list)
         total_pnl = df_b["pnl"].sum()
         total_stake = df_b["stake"].sum()
         roi = (total_pnl / total_stake) * 100.0
         
-        # Win rate (licząc remisy w DNB jako nie-porażki)
         wins_count = len(df_b[df_b["win"] == 1])
         draw_refunds = len(df_b[df_b["win"] == 0.5])
         clean_win_rate = (wins_count / len(df_b)) * 100.0
         capital_survival_rate = ((wins_count + draw_refunds) / len(df_b)) * 100.0
 
-        # Drawdown
         df_b["cum_pnl"] = df_b["pnl"].cumsum()
         df_b["peak"] = df_b["cum_pnl"].cummax()
         df_b["drawdown"] = df_b["cum_pnl"] - df_b["peak"]
         max_dd = df_b["drawdown"].min()
 
-        # Sharpe ratio
         daily_returns = df_b["pnl"] / df_b["stake"]
         sharpe = (daily_returns.mean() / daily_returns.std() * np.sqrt(len(df_b))) if daily_returns.std() > 0 else 0.0
 
@@ -216,20 +259,21 @@ def run_comprehensive_benchmark():
 
     m1 = calc_metrics(portfolio_high_risk, "1. Wysokie kursy (Odds > 3.0, czysta 1)")
     m2 = calc_metrics(portfolio_baseline, "2. Poprzedni Baseline (Dowolne kursy, czysta 1)")
-    m3 = calc_metrics(portfolio_preservation, "3. Nasz nowy Capital Preservation (1X / DNB / 1, kursy 1.15-1.85)")
+    m3 = calc_metrics(portfolio_preservation_singles, "3. Capital Preservation (Single 1X / DNB / 1)")
+    m4 = calc_metrics(portfolio_parlays, "4. OPTYMALNE DUBLE (2-Leg Parlay Dixon-Coles)")
 
-    bench_df = pd.DataFrame([m1, m2, m3])
+    bench_df = pd.DataFrame([m1, m2, m3, m4])
     
-    print("\n" + "=" * 90)
+    print("\n" + "=" * 95)
     print("INSTYTUCJONALNY BENCHMARK STRATEGII (Out-of-Time Walk-Forward 2022-2026)")
-    print("=" * 90)
+    print("=" * 95)
     for _, r in bench_df.iterrows():
         print(f"[*] STRATEGIA: {r['name']}")
         print(f"   Liczba zawartych zakladow: {r['count']} | Sredni kurs: {r['avg_odd']:.2f}")
         print(f"   Skutecznosc (Win Rate): {r['win_rate']:.1f}% | Brak straty kapitalu (Win + Zwrot): {r['survival_rate']:.1f}%")
         print(f"   Laczny Wynik Finansowy: {r['total_pnl']:+.2f} j. | Zwrot z Inwestycji (ROI): {r['roi']:+.2f}%")
         print(f"   Maksymalne obsuniecie (Max Drawdown): {r['max_dd']:.2f} j. | Sharpe Ratio: {r['sharpe']:.2f}\n")
-    print("=" * 90 + "\n")
+    print("=" * 95 + "\n")
     return bench_df
 
 
