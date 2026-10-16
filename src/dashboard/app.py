@@ -234,15 +234,28 @@ with tab_all:
 with tab_visuals:
     st.subheader("Wizualizacja przewagi matematycznej (Model Prob vs Implied Odds)")
     
+    # Wyliczamy uczciwą implikowaną szansę rynkową (usuwając overround) jeśli nie ma w ramce
+    if "fair_prob_home" not in df.columns:
+        inv_sum = (1.0 / df["odds_home"]) + (1.0 / df["odds_draw"]) + (1.0 / df["odds_away"])
+        df["fair_prob_home"] = ((1.0 / df["odds_home"]) / inv_sum).round(4)
+    
+    hover_cols = ["match", "league_name", "market_chosen", "rec_odd", "rec_prob", "rec_ev"] if "rec_odd" in df.columns else ["match", "odds_home", "current_ev"]
+    
+    y_col = "rec_prob" if "rec_prob" in df.columns else "prob_home"
+    size_col = "rec_odd" if "rec_odd" in df.columns else "odds_home"
+
     fig = px.scatter(
         df,
         x="fair_prob_home",
-        y="prob_home",
+        y=y_col,
         color="is_actionable",
         color_discrete_map={True: "#10b981", False: "#6b7280"},
-        size="odds_home",
-        hover_data=["match", "odds_home", "current_ev"],
-        labels={"fair_prob_home": "Uczciwa szansa bukmachera (Implied Fair)", "prob_home": "Szansa wyliczona przez Model (Poisson + LGBM)"},
+        size=size_col,
+        hover_data=hover_cols,
+        labels={
+            "fair_prob_home": "Uczciwa szansa bukmachera (Implied Fair)",
+            y_col: "Pewność wybranego rynku inwestycyjnego (1X / DNB / 1)"
+        },
         title="Rozkład szans: Punkty powyżej linii przerywanej to dodatnia wartość (Edge > 0)"
     )
     # Linia neutralna (x = y)
@@ -254,17 +267,19 @@ with tab_visuals:
     st.plotly_chart(fig, use_container_width=True)
 
     # Wykres EV wg meczów
-    st.subheader("Wartość Oczekiwana (EV) dla wygranych gospodarzy")
+    st.subheader("Wartość Oczekiwana (EV) dla wyselekcjonowanych rynków")
+    bar_x = "rec_ev" if "rec_ev" in df.columns else "current_ev"
+    
     fig_bar = px.bar(
-        df.sort_values("current_ev", ascending=True),
-        x="current_ev",
+        df.sort_values(bar_x, ascending=True),
+        x=bar_x,
         y="match",
         orientation="h",
         color="is_actionable",
         color_discrete_map={True: "#10b981", False: "#ef4444"},
-        labels={"current_ev": "Expected Value (EV)", "match": "Mecz"},
-        title="Wartość oczekiwana na wygraną gospodarza (Zielone: kwalifikuje się do postawienia)"
+        labels={bar_x: "Expected Value (EV)", "match": "Mecz"},
+        title="Wartość oczekiwana (Zielone: kwalifikuje się do portfela inwestycyjnego)"
     )
     fig_bar.add_vline(x=min_ev_input, line_dash="dash", line_color="yellow", annotation_text=f"Próg EV ({min_ev_input*100:.0f}%)")
-    fig_bar.update_layout(height=600, template="plotly_dark")
+    fig_bar.update_layout(height=650, template="plotly_dark")
     st.plotly_chart(fig_bar, use_container_width=True)
