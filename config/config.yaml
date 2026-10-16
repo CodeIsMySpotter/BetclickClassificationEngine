@@ -1,0 +1,82 @@
+# Konfiguracja silnika decyzyjnego Multi-League Match Intelligence & Betclic Feed
+
+general:
+  base_currency: "PLN"
+  default_bankroll: 50.0
+
+leagues:
+  - id: "laliga"
+    name: "La Liga (Hiszpania)"
+    code: "SP1"
+    understat: "ESP-La Liga"
+    betclic_url: "https://www.betclic.pl/pilka-nozna-s1/hiszpania-la-liga-c7"
+  - id: "premier_league"
+    name: "Premier League (Anglia)"
+    code: "E0"
+    understat: "ENG-Premier League"
+    betclic_url: "https://www.betclic.pl/pilka-nozna-s1/anglia-premier-league-c3"
+  - id: "bundesliga"
+    name: "Bundesliga (Niemcy)"
+    code: "D1"
+    understat: "GER-Bundesliga"
+    betclic_url: "https://www.betclic.pl/pilka-nozna-s1/niemcy-bundesliga-c5"
+  - id: "serie_a"
+    name: "Serie A (Włochy)"
+    code: "I1"
+    understat: "ITA-Serie A"
+    betclic_url: "https://www.betclic.pl/pilka-nozna-s1/wlochy-serie-a-c6"
+  - id: "ligue_1"
+    name: "Ligue 1 (Francja)"
+    code: "F1"
+    understat: "FRA-Ligue 1"
+    betclic_url: "https://www.betclic.pl/pilka-nozna-s1/francja-ligue-1-c4"
+  - id: "eredivisie"
+    name: "Eredivisie (Holandia)"
+    code: "N1"
+    understat: "NED-Eredivisie"
+    betclic_url: "https://www.betclic.pl/pilka-nozna-s1/holandia-eredivisie-c22"
+  - id: "primeira_liga"
+    name: "Primeira Liga (Portugalia)"
+    code: "P1"
+    understat: "POR-Primeira Liga"
+    betclic_url: "https://www.betclic.pl/pilka-nozna-s1/portugalia-primeira-liga-c32"
+  - id: "ekstraklasa"
+    name: "Ekstraklasa (Polska)"
+    code: "POL"
+    understat: "POL-Ekstraklasa"
+    betclic_url: "https://www.betclic.pl/pilka-nozna-s1/polska-ekstraklasa-c1"
+
+betclic:
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+  timeout_seconds: 10
+  # Betclic - gra bez podatku (0.0)
+  tax_rate: 0.0
+  apply_tax: true
+
+strategy:
+  # Tryb silnika: 'capital_preservation' (1X / DNB / Win or Draw) lub 'home_only'
+  mode: "capital_preservation"
+  # Optymalny minimalny próg EV kwalifikujący zakład (4% na podstawie Grid Search)
+  min_ev: 0.04
+  # Pułapka kursowa (Asymmetric Value Trap Ceiling): odrzucamy podejrzenie anomalii info bukmachera (powyżej 18% EV)
+  max_ev: 0.18
+  # Frakcja kryterium Kelly'ego (Quarter-Kelly = 0.25)
+  kelly_fraction: 0.25
+  # Maksymalny procent bankrolla na pojedyncze zdarzenie (3.5% dla dużych portfeli, do 8% dla micro-bankrolla)
+  max_cap_pct: 0.035
+  # Widełki kursowe dla profilu inwestycyjnego (stabilne kursy np. 1.15 - 1.85)
+  min_odds: 1.15
+  max_odds: 1.85
+  # Minimalne prawdopodobieństwo wygranej modelu (70% - gwarantuje wysoki Win Rate i ochronę kapitału)
+  min_model_prob: 0.70
+  # Preferowane rynki inwestycyjne
+  allowed_markets: ["1X_double_chance", "dnb_home", "home_straight"]
+
+model_weights:
+  poisson: 0.93
+  lightgbm: 0.07
+
+paths:
+  raw_data_dir: "data/raw"
+  processed_data_dir: "data/processed"
+  artifacts_dir: "artifacts"

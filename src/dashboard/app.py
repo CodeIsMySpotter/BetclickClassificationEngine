@@ -1,309 +1,355 @@
-"""
-predict_next_gameweek.py
-========================
-Produkcyjny silnik inferencyjny dla La Ligi (Sezon 2026/2027).
+"""Interactive Match Intelligence Dashboard (Streamlit).
 
-Architektura potoku:
-1. Ingestion: Wczytanie bazy historii (matches_history.csv) oraz kolejki (next_fixtures.csv).
-2. Temporal Cutoff: Zamrożenie cech w dacie najwcześniejszego meczu nadchodzącej kolejki.
-3. Causal State Reconstruction: Chronologiczne przeliczenie Elo i okien xG z obsługą Mean Reversion.
-4. Hybrid Probability Model: Poisson GLM (0.93) + LightGBM (0.07).
-5. Risk & Decision Desk: Selekcja Home Win Only (EV >= 5.0%) oraz Quarter-Kelly (c = 0.25, Cap 3.5%).
-6. Export: Zapisanie artefaktów CSV/JSON pod kątem Power BI i Excela.
+Visualizes real-time Betclic fixtures, expected values (EV), Poisson score grids,
+Quarter-Kelly capital allocations, and interactive bankroll risk controls.
 """
 
-import argparse
-from dataclasses import dataclass
 import datetime
 import json
-import logging
-import math
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
-import numpy as np
 import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import streamlit as st
+import yaml
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
+# Konfiguracja strony
+st.set_page_config(
+    page_title="Betclic Match Intelligence | La Liga Quant",
+    page_icon="⚽",
+    layout="wide",
+    initial_sidebar_state="expanded",
 )
-logger = logging.getLogger("LaLigaProductionPipeline")
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+ARTIFACTS_DIR = BASE_DIR / "artifacts"
+CONFIG_PATH = BASE_DIR / "config" / "config.yaml"
+LIVE_PREDS_CSV = ARTIFACTS_DIR / "gameweek_live_predictions.csv"
+LIVE_PREDS_JSON = ARTIFACTS_DIR / "gameweek_live_predictions.json"
 
 
-# =====================================================================
-# 1. KONTRAKTY DANYCH
-# =====================================================================
-
-@dataclass
-class TeamHistoricalProfile:
-    """Dynamiczny bufor formy i siły drużyny przed meczem."""
-    team_name: str
-    elo: float = 1500.0
-    xg_for_history: List[float] = None
-    xg_against_history: List[float] = None
-    sot_for_history: List[int] = None
-    sot_against_history: List[int] = None
-    last_match_date: Optional[datetime.date] = None
-
-    def __post_init__(self):
-        if self.xg_for_history is None:
-            self.xg_for_history = []
-        if self.xg_against_history is None:
-            self.xg_against_history = []
-        if self.sot_for_history is None:
-            self.sot_for_history = []
-        if self.sot_against_history is None:
-            self.sot_against_history = []
-
-    def get_rolling_metrics(self, window: int = 5) -> Tuple[float, float, float]:
-        """Zwraca: (rolling_xg_for, rolling_xg_against, rolling_sotr)."""
-        if not self.xg_for_history:
-            return 1.35, 1.35, 0.50
-
-        sub_xg_f = self.xg_for_history[-window:]
-        sub_xg_a = self.xg_against_history[-window:]
-        sub_sot_f = self.sot_for_history[-window:]
-        sub_sot_a = self.sot_against_history[-window:]
-
-        roll_xg_f = float(np.mean(sub_xg_f))
-        roll_xg_a = float(np.mean(sub_xg_a))
-        tot_sot = sum(sub_sot_f) + sum(sub_sot_a)
-        roll_sotr = (sum(sub_sot_f) / tot_sot) if tot_sot > 0 else 0.50
-
-        return roll_xg_f, roll_xg_a, roll_sotr
+def load_config():
+    if CONFIG_PATH.exists():
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            return yaml.safe_load(f) or {}
+    return {}
 
 
-@dataclass(frozen=True)
-class UpcomingFixture:
-    """Kontrakt pojedynczego meczu do oceny decyzyjnej."""
-    match_id: str
-    match_date: datetime.date
-    home_team: str
-    away_team: str
-    odds_home: float
-    odds_draw: float
-    odds_away: float
+def load_predictions():
+    if LIVE_PREDS_CSV.exists():
+        df = pd.read_csv(LIVE_PREDS_CSV)
+        return df
+    return pd.DataFrame()
 
 
-# =====================================================================
-# 2. KAUSALNY ZARZĄDCA STANU (ZERO-LEAKAGE STATE ENGINE)
-# =====================================================================
-
-class CausalStateManager:
+# Styl CSS (Glassmorphism & Dark UI)
+st.markdown(
     """
-    Śledzi i odtwarza chronologiczny stan drużyn bez dostępu do przyszłości.
-    """
-    K_FACTOR: float = 24.0
-    HOME_ADVANTAGE_ELO: float = 65.0
-    SEASON_REVERSION_WEIGHT: float = 0.25
+    <style>
+    .main {
+        background-color: #0e1117;
+    }
+    .metric-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 16px;
+        backdrop-filter: blur(10px);
+        margin-bottom: 12px;
+    }
+    .ev-badge-pos {
+        background-color: #059669;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+    .ev-badge-pass {
+        background-color: #4b5563;
+        color: #d1d5db;
+        padding: 4px 8px;
+        border-radius: 6px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
-    def __init__(self) -> None:
-        self.teams: Dict[str, TeamHistoricalProfile] = {}
-        self.current_season: Optional[str] = None
+# Nagłówek
+st.title("⚽ La Liga Match Intelligence & Decision System")
+st.caption("Quant Strategy: Poisson GLM (93%) + LightGBM (7%) • Quarter-Kelly Allocation • Real-Time Betclic PL Feed")
 
-    def _get_or_create(self, team_name: str) -> TeamHistoricalProfile:
-        if team_name not in self.teams:
-            # Beniaminek otrzymuje nieco niższy ranking bazowy w lidze
-            self.teams[team_name] = TeamHistoricalProfile(team_name=team_name, elo=1460.0)
-        return self.teams[team_name]
+# Sidebar - Kontrola parametrów
+st.sidebar.header("⚙️ Parametry Decyzyjne")
+config = load_config()
 
-    def apply_season_mean_reversion(self) -> None:
-        """Koryguje Elo o 25% w stronę średniej ligowej w przerwie letniej."""
-        for profile in self.teams.values():
-            profile.elo = (1.0 - self.SEASON_REVERSION_WEIGHT) * profile.elo + (self.SEASON_REVERSION_WEIGHT * 1500.0)
+default_bankroll = float(config.get("general", {}).get("default_bankroll", 50.0))
+bankroll = st.sidebar.number_input("Twój Bankroll (PLN)", min_value=10.0, max_value=100_000.0, value=default_bankroll, step=10.0, help="Twój całkowity budżet przeznaczony na grę (np. 50 zł)")
 
-    def process_historical_matches(self, matches_df: pd.DataFrame, cutoff_date: datetime.date) -> None:
-        """Przetwarza mecz po meczu ściśle do momentu cutoff_date."""
-        df_sorted = matches_df.copy()
-        df_sorted["date_dt"] = pd.to_datetime(df_sorted["date"]).dt.date
-        df_sorted = df_sorted[df_sorted["date_dt"] < cutoff_date].sort_values("date_dt")
+min_ev_input = st.sidebar.slider("Minimalny Próg EV (%)", min_value=0.0, max_value=20.0, value=float(config.get("strategy", {}).get("min_ev", 0.04)) * 100, step=1.0) / 100.0
+max_ev_input = st.sidebar.slider("Maksymalny Próg EV - Filtr Pułapek (%)", min_value=5.0, max_value=35.0, value=float(config.get("strategy", {}).get("max_ev", 0.18)) * 100, step=1.0, help="Odrzuca podejrzanie wysokie EV (>18%), które często oznaczają pułapkę bukmachera (np. nagła kontuzja kluczowego gracza, rotacja składu).") / 100.0
 
-        logger.info("Budowanie stanu zespołów na podstawie %d spotkań (Cutoff: %s)...", len(df_sorted), cutoff_date)
+st.sidebar.markdown("### 🎯 Profil Ryzyka & Wariancja")
+odds_range = st.sidebar.slider(
+    "Zakres kursów (Widełki)",
+    min_value=1.10,
+    max_value=3.50,
+    value=(float(config.get("strategy", {}).get("min_odds", 1.15)), float(config.get("strategy", {}).get("max_odds", 1.85))),
+    step=0.05,
+    help="Ogranicza zakłady do bezpieczniejszych kursów (1.15 - 1.85) eliminując dużą zmienność portfela."
+)
 
-        for _, row in df_sorted.iterrows():
-            season = row["season"]
-            if self.current_season is not None and season != self.current_season:
-                self.apply_season_mean_reversion()
-            self.current_season = season
+min_win_prob_input = st.sidebar.slider(
+    "Minimalna szansa modelu (%)",
+    min_value=40.0,
+    max_value=85.0,
+    value=float(config.get("strategy", {}).get("min_model_prob", 0.70)) * 100,
+    step=5.0,
+    help="Odrzuca typy o niskim prawdopodobieństwie sukcesu, gwarantując wysoki Win Rate i ochronę kapitału."
+) / 100.0
 
-            m_date = row["date_dt"]
-            h_team = self._get_or_create(row["home_team"])
-            a_team = self._get_or_create(row["away_team"])
+tax_free = st.sidebar.toggle("Gra bez podatku (0% tax)", value=(config.get("betclic", {}).get("tax_rate", 0.0) == 0.0))
 
-            # Zapis historii formy
-            h_team.xg_for_history.append(float(row["home_xg"]))
-            h_team.xg_against_history.append(float(row["away_xg"]))
-            h_team.sot_for_history.append(int(row["home_sot"]))
-            h_team.sot_against_history.append(int(row["away_sot"]))
-            h_team.last_match_date = m_date
+st.sidebar.markdown("---")
+if st.sidebar.button("🔄 Odśwież kursy z Betclic na żywo"):
+    with st.spinner("Odpytywanie Betclic i przeliczanie modelu..."):
+        from src.analysis.run_matchday import run_matchday_pipeline
+        run_matchday_pipeline()
+    st.sidebar.success("Kursy i predykcje zaktualizowane!")
+    st.rerun()
 
-            a_team.xg_for_history.append(float(row["away_xg"]))
-            a_team.xg_against_history.append(float(row["home_xg"]))
-            a_team.sot_for_history.append(int(row["away_sot"]))
-            a_team.sot_against_history.append(int(row["home_sot"]))
-            a_team.last_match_date = m_date
+# Wczytanie danych
+df = load_predictions()
 
-            # Aktualizacja Elo
-            goals_h = int(row["home_goals"])
-            goals_a = int(row["away_goals"])
-            actual_score_h = 1.0 if goals_h > goals_a else (0.5 if goals_h == goals_a else 0.0)
-            
-            dr = (h_team.elo + self.HOME_ADVANTAGE_ELO) - a_team.elo
-            we_h = 1.0 / (10.0 ** (-dr / 400.0) + 1.0)
-            
-            h_team.elo += self.K_FACTOR * (actual_score_h - we_h)
-            a_team.elo += self.K_FACTOR * ((1.0 - actual_score_h) - (1.0 - we_h))
+if df.empty:
+    st.warning("Brak wygenerowanych predykcji. Kliknij przycisk po lewej stronie, aby pobrać kursy z Betclica.")
+    st.stop()
 
+# Filtr wyboru ligi
+available_leagues = sorted(df["league_name"].unique().tolist()) if "league_name" in df.columns else ["La Liga"]
+selected_leagues = st.sidebar.multiselect(
+    "🏆 Wybierz ligi do analizy",
+    options=available_leagues,
+    default=available_leagues,
+    help="Filtruj spotkania pod kątem konkretnych rozgrywek ligowych."
+)
+if selected_leagues:
+    df = df[df["league_name"].isin(selected_leagues)]
 
-# =====================================================================
-# 3. HYBRYDOWY SILNIK PREDYKCJI I RYZYKA
-# =====================================================================
+# Filtr Horyzontu Czasowego (Mecze na Dziś / Weekend / Całość)
+time_filter = st.sidebar.radio(
+    "📅 Horyzont czasowy",
+    options=["Wszystkie nadchodzące", "Tylko DZIŚ (Mecze bieżące)", "Najbliższe 3 dni (Weekend)"],
+    index=0
+)
+today_str = datetime.date.today().strftime("%Y-%m-%d")
+if time_filter == "Tylko DZIŚ (Mecze bieżące)":
+    df = df[df["match_date"] == today_str]
+elif time_filter == "Najbliższe 3 dni (Weekend)":
+    in_3_days = (datetime.date.today() + datetime.timedelta(days=3)).strftime("%Y-%m-%d")
+    df = df[(df["match_date"] >= today_str) & (df["match_date"] <= in_3_days)]
 
-class ProductionInferenceEngine:
-    W_POISSON: float = 0.93
-    W_LGBM: float = 0.07
-    MIN_EV: float = 0.05
-    KELLY_FRAC: float = 0.25
-    CAP_PCT: float = 0.035
-    DEFAULT_BANKROLL: float = 10_000.0
+# Przeliczenie stawek dla bieżącego bankrolla i filtrów profilu ryzyka
+tax_multiplier = 1.0 if tax_free else 0.88
 
-    @staticmethod
-    def _poisson_grid(elo_diff: float, xg_diff: float) -> Tuple[float, float, float]:
-        lh = max(0.3, 1.45 + (0.0018 * elo_diff) + (0.35 * xg_diff))
-        la = max(0.3, 1.05 - (0.0014 * elo_diff) - (0.28 * xg_diff))
-        
-        ph = [np.exp(-lh) * (lh**g) / math.factorial(g) for g in range(7)]
-        pa = [np.exp(-la) * (la**g) / math.factorial(g) for g in range(7)]
-        grid = np.outer(ph, pa)
+# Używamy wyselekcjonowanego rynku inwestycyjnego (1X / DNB / 1) jeśli istnieje w danych
+eval_ev = df["rec_ev"] if "rec_ev" in df.columns else ((df["prob_home"] * (df["odds_home"] * tax_multiplier)) - 1.0)
+eval_odd = df["rec_odd"] if "rec_odd" in df.columns else df["odds_home"]
+eval_prob = df["rec_prob"] if "rec_prob" in df.columns else df["prob_home"]
 
-        prob_h = float(np.sum(np.tril(grid, -1)))
-        prob_x = float(np.sum(np.diag(grid)))
-        prob_a = float(np.sum(np.triu(grid, 1)))
-        tot = prob_h + prob_x + prob_a
-        return prob_h / tot, prob_x / tot, prob_a / tot
+df["current_ev"] = eval_ev
 
-    @staticmethod
-    def _lgbm_prior(elo_diff: float, xg_diff: float, rest_diff: int) -> Tuple[float, float, float]:
-        zh = 0.15 + (0.0075 * elo_diff) + (0.85 * xg_diff) + (0.04 * rest_diff)
-        zx = -0.45 - (0.0015 * abs(elo_diff))
-        za = -0.15 - (0.0068 * elo_diff) - (0.75 * xg_diff) - (0.03 * rest_diff)
-        eh, ex, ea = np.exp(zh), np.exp(zx), np.exp(za)
-        tot = eh + ex + ea
-        return eh / tot, ex / tot, ea / tot
+# Warunek decyzyjny łączący EV + Filtr pułapek + Widełki kursowe + Minimalną szansę sukcesu
+df["is_actionable"] = (
+    (eval_ev >= min_ev_input) &
+    (eval_ev <= max_ev_input) &
+    (eval_odd >= odds_range[0]) &
+    (eval_odd <= odds_range[1]) &
+    (eval_prob >= min_win_prob_input)
+)
 
-    def predict_match(self, fixture: UpcomingFixture, state_mgr: CausalStateManager,
-                      bankroll: float = DEFAULT_BANKROLL) -> Dict:
-        h_profile = state_mgr._get_or_create(fixture.home_team)
-        a_profile = state_mgr._get_or_create(fixture.away_team)
+# Dynamiczny Quarter Kelly pod wybrany rynek inwestycyjny (z uwzględnieniem minimalnej stawki w Betclic = 1-2 zł)
+def calc_stake(row):
+    if not row["is_actionable"]:
+        return 0.0, 0.0
+    ev = row["current_ev"]
+    odd = row.get("rec_odd", row["odds_home"])
+    b = (odd * tax_multiplier) - 1.0
+    full_k = ev / b if b > 0 else 0.0
+    # Przy małym bankrollu (np. 50 zł) pozwalamy na stawkę 2-5 zł (4-10% banku), żeby kupon był przyjmowany przez Betclic (min. 1-2 zł)
+    max_risk_cap = 0.08 if bankroll <= 100.0 else 0.035
+    adj_k = min(max_risk_cap, full_k * 0.25)
+    stake_pln = round(adj_k * bankroll, 2)
+    # Betclic wymaga minimum 1.00 zł na kupon
+    if stake_pln < 1.0 and bankroll >= 10.0:
+        stake_pln = 1.0
+        adj_k = 1.0 / bankroll
+    return round(adj_k * 100, 2), stake_pln
 
-        # 1. Obliczenie cech przedmeczowych
-        elo_diff = (h_profile.elo + state_mgr.HOME_ADVANTAGE_ELO) - a_profile.elo
-        h_xg_f, h_xg_a, _ = h_profile.get_rolling_metrics(5)
-        a_xg_f, a_xg_a, _ = a_profile.get_rolling_metrics(5)
-        xg_diff = (h_xg_f - h_xg_a) - (a_xg_f - a_xg_a)
+res = df.apply(calc_stake, axis=1)
+df["stake_pct_calc"] = [r[0] for r in res]
+df["stake_units_calc"] = [r[1] for r in res]
 
-        h_rest = (fixture.match_date - h_profile.last_match_date).days if h_profile.last_match_date else 7
-        a_rest = (fixture.match_date - a_profile.last_match_date).days if a_profile.last_match_date else 7
-        rest_diff = int(h_rest - a_rest)
+# KPI Bar
+actionable_df = df[df["is_actionable"]]
+total_stake = actionable_df["stake_units_calc"].sum()
 
-        # 2. Prawdopodobieństwa hybrydowe
-        p_poi_h, p_poi_x, p_poi_a = self._poisson_grid(elo_diff, xg_diff)
-        p_lgb_h, p_lgb_x, p_lgb_a = self._lgbm_prior(elo_diff, xg_diff, rest_diff)
+col1, col2, col3, col4 = st.columns(4)
+with col1:
+    st.metric("Monitorowane mecze", len(df))
+with col2:
+    st.metric("Rekomendowane zakłady", len(actionable_df))
+with col3:
+    avg_ev = actionable_df["current_ev"].mean() * 100 if not actionable_df.empty else 0.0
+    st.metric("Średnie EV rekomendacji", f"{avg_ev:+.1f}%")
+with col4:
+    st.metric("Łączna ekspozycja", f"{total_stake:.2f} PLN", f"{(total_stake/bankroll)*100:.1f}% kapitału")
 
-        prob_h = round((self.W_POISSON * p_poi_h) + (self.W_LGBM * p_lgb_h), 4)
-        prob_x = round((self.W_POISSON * p_poi_x) + (self.W_LGBM * p_lgb_x), 4)
-        prob_a = round((self.W_POISSON * p_poi_a) + (self.W_LGBM * p_lgb_a), 4)
+st.markdown("---")
 
-        # 3. Usunięcie Overroundu
-        inv_sum = (1.0 / fixture.odds_home) + (1.0 / fixture.odds_draw) + (1.0 / fixture.odds_away)
-        fair_h = round((1.0 / fixture.odds_home) / inv_sum, 4)
+# Zakładki
+tab_bets, tab_parlays, tab_all, tab_visuals = st.tabs([
+    "🎯 Rekomendacje Pojedyncze (Single)",
+    "⚡ Duble Inwestycyjne (2-Leg Parlay)",
+    "📋 Pełna tabela spotkań",
+    "📊 Wykresy i Rozkłady"
+])
 
-        # 4. Egzekucja strategii Alpha (Home Only & EV >= 5%)
-        ev_home = round((prob_h * fixture.odds_home) - 1.0, 4)
-        is_target = ev_home >= self.MIN_EV
+PARLAYS_JSON = ARTIFACTS_DIR / "optimal_parlays.json"
 
-        if is_target:
-            decision = "EXECUTE_BET"
-            b = fixture.odds_home - 1.0
-            full_k = ev_home / b if b > 0 else 0.0
-            adj_k = min(self.CAP_PCT, full_k * self.KELLY_FRAC)
-            stake_units = round(adj_k * bankroll, 2)
-            stake_pct = round(adj_k * 100.0, 2)
-        else:
-            decision = "PASS"
-            stake_units = 0.0
-            stake_pct = 0.0
+with tab_parlays:
+    st.subheader("⚡ Generator Optymalnych Dubli Inwestycyjnych (2-Leg Parlay)")
+    st.caption("Łączenie dwóch niezależnych spotkań o bardzo wysokiej pewności (np. Arsenal + Leverkusen) w celu multiplikacji zysku przy zachowaniu szansy sukcesu > 75%")
 
-        return {
-            "match_id": fixture.match_id,
-            "match_date": fixture.match_date.strftime("%Y-%m-%d"),
-            "match": f"{fixture.home_team} vs {fixture.away_team}",
-            "elo_diff": round(elo_diff, 1),
-            "roll_xg_diff_5m": round(xg_diff, 2),
-            "rest_days_diff": rest_diff,
-            "prob_home": prob_h,
-            "prob_draw": prob_x,
-            "prob_away": prob_a,
-            "odds_home": fixture.odds_home,
-            "fair_prob_home": fair_h,
-            "ev_home": ev_home,
-            "decision": decision,
-            "stake_pct": stake_pct,
-            "stake_units": stake_units
-        }
+    if PARLAYS_JSON.exists():
+        with open(PARLAYS_JSON, "r", encoding="utf-8") as f:
+            parlays_data = json.load(f)
+    else:
+        parlays_data = []
 
+    if not parlays_data:
+        st.info("Brak wygenerowanych parlayów. Kliknij 'Odśwież kursy z Betclic na żywo' w pasku bocznym.")
+    else:
+        for idx, p in enumerate(parlays_data, start=1):
+            with st.container():
+                st.markdown(f"#### **Dubel #{idx}: Kurs Łączny {p['combined_odds']:.2f}** | Pewność Kuponu: **{p['combined_prob']*100:.1f}%** | EV: **{p['ev']*100:+.1f}%**")
+                pc1, pc2, pc3 = st.columns([4, 4, 3])
+                with pc1:
+                    st.info(f"**Noga 1:** [{p['leg1']['league']}] **{p['leg1']['match']}**\n\n🎯 Typ: **{p['leg1']['market']}** (Kurs: {p['leg1']['odd']:.2f} | Szansa: {p['leg1']['prob']*100:.1f}%)")
+                with pc2:
+                    st.info(f"**Noga 2:** [{p['leg2']['league']}] **{p['leg2']['match']}**\n\n🎯 Typ: **{p['leg2']['market']}** (Kurs: {p['leg2']['odd']:.2f} | Szansa: {p['leg2']['prob']*100:.1f}%)")
+                with pc3:
+                    parlay_pct = p['stake_pct']
+                    if bankroll <= 100.0:
+                        parlay_stake = max(2.0, round((parlay_pct / 100.0) * bankroll, 2))
+                        parlay_pct = round((parlay_stake / bankroll) * 100.0, 1)
+                    else:
+                        parlay_stake = round((parlay_pct / 100.0) * bankroll, 2)
+                    st.metric("Rekomendowana Stawka", f"{parlay_stake:.2f} PLN", f"{parlay_pct}% banku")
+                    potential_win = round(parlay_stake * p['combined_odds'], 2)
+                    st.caption(f"Potencjalna wygrana: **{potential_win:.2f} PLN**")
+                st.markdown("---")
 
-# =====================================================================
-# 4. ORKIESTRACJA I ZAPIS ARTEFAKTÓW
-# =====================================================================
+with tab_bets:
+    st.subheader("🛡️ Portfel Inwestycyjny: Capital Preservation (1X / DNB / 1)")
+    st.caption("Filtry: Pewność modelu ≥ 70%, kursy 1.15 - 1.85, minimalizacja wariancji kapitału")
+    if actionable_df.empty:
+        st.info("Brak spotkań spełniających zadane kryteria. Możesz poluzować suwaki w pasku bocznym.")
+    else:
+        for _, row in actionable_df.iterrows():
+            with st.container():
+                c1, c2, c3, c4 = st.columns([3, 2, 2, 2])
+                with c1:
+                    league_badge = f"[{row.get('league_name', 'La Liga')}] "
+                    st.markdown(f"### **{league_badge}{row['match']}**")
+                    market_txt = row.get("market_chosen", "1X (Win or Draw)")
+                    st.markdown(f"🎯 **Rekomendowany typ: <span style='color:#10b981; font-size:1.15em;'>{market_txt}</span>**", unsafe_allow_html=True)
+                    st.caption(f"📅 Data: {row['match_date']} | Bilans xG 5m: {row['roll_xg_diff_5m']:+.2f} | Różnica Elo: {row['elo_diff']:+.1f}")
+                with c2:
+                    st.metric("Kurs Zakładu", f"{row.get('rec_odd', row['odds_home']):.2f}")
+                    st.caption(f"1X: {row.get('odds_1x', 1.25)} | DNB: {row.get('odds_dnb', 1.30)} | 1: {row['odds_home']:.2f}")
+                with c3:
+                    rec_p = row.get("rec_prob", row["prob_home"]) * 100
+                    rec_ev = row.get("rec_ev", row["current_ev"]) * 100
+                    st.metric("Pewność Modelu", f"{rec_p:.1f}%", f"EV: {rec_ev:+.1f}%")
+                    st.caption(f"Szansa 1X: {row.get('prob_1x', 0.8)*100:.1f}% | Szansa DNB: {row.get('prob_dnb', 0.8)*100:.1f}%")
+                with c4:
+                    st.metric("Stawka (Quarter-Kelly)", f"{row['stake_units_calc']:.2f} PLN", f"{row['stake_pct_calc']:.2f}% banku")
+                st.markdown("---")
 
-def run_pipeline(history_csv_path: str, fixtures_csv_path: str, output_dir: str = "artifacts") -> pd.DataFrame:
-    df_hist = pd.read_csv(history_csv_path)
-    df_fix = pd.read_csv(fixtures_csv_path)
-
-    # Cutoff to data pierwszego meczu kolejki
-    cutoff_date = pd.to_datetime(df_fix["match_date"].min()).date()
+with tab_all:
+    st.subheader("Wszystkie analizowane spotkania ze wszystkich lig")
     
-    state_mgr = CausalStateManager()
-    state_mgr.process_historical_matches(df_hist, cutoff_date=cutoff_date)
+    display_df = df.copy()
+    display_df["Pewność (%)"] = (display_df["rec_prob"] * 100).round(1) if "rec_prob" in display_df.columns else (display_df["prob_home"] * 100).round(1)
+    display_df["EV (%)"] = (display_df["rec_ev"] * 100).round(1) if "rec_ev" in display_df.columns else (display_df["current_ev"] * 100).round(1)
+    display_df["Kurs Rekomendowany"] = display_df["rec_odd"] if "rec_odd" in display_df.columns else display_df["odds_home"]
+    display_df["Rekomendowany Rynek"] = display_df["market_chosen"] if "market_chosen" in display_df.columns else "1X"
+    display_df["Szansa 1X (%)"] = (display_df["prob_1x"] * 100).round(1) if "prob_1x" in display_df.columns else 0.0
+    display_df["Szansa DNB (%)"] = (display_df["prob_dnb"] * 100).round(1) if "prob_dnb" in display_df.columns else 0.0
+    display_df["Stawka (PLN)"] = display_df["stake_units_calc"]
+    display_df["Status"] = display_df["is_actionable"].map({True: "✅ REKOMENDOWANY", False: "❌ ODPUŚĆ"})
 
-    engine = ProductionInferenceEngine()
-    upcoming = []
-    for _, r in df_fix.iterrows():
-        upcoming.append(UpcomingFixture(
-            match_id=r["match_id"],
-            match_date=pd.to_datetime(r["match_date"]).date(),
-            home_team=r["home_team"],
-            away_team=r["away_team"],
-            odds_home=float(r["odds_home"]),
-            odds_draw=float(r["odds_draw"]),
-            odds_away=float(r["odds_away"])
-        ))
+    cols_to_show = [
+        "league_name", "match_date", "match", "Rekomendowany Rynek", "Kurs Rekomendowany",
+        "Pewność (%)", "EV (%)", "Szansa 1X (%)", "Szansa DNB (%)", "Status", "Stawka (PLN)"
+    ]
 
-    logger.info("Uruchamianie ewaluacji prawdopodobieństw i ryzyka dla %d meczów...", len(upcoming))
-    preds = [engine.predict_match(fix, state_mgr) for fix in upcoming]
-    df_out = pd.DataFrame(preds)
+    st.dataframe(
+        display_df[cols_to_show].sort_values("Pewność (%)", ascending=False),
+        use_container_width=True,
+        hide_index=True
+    )
 
-    out_path = Path(output_dir)
-    out_path.mkdir(parents=True, exist_ok=True)
+with tab_visuals:
+    st.subheader("Wizualizacja przewagi matematycznej (Model Prob vs Implied Odds)")
     
-    csv_file = out_path / "gameweek_live_predictions.csv"
-    json_file = out_path / "gameweek_live_predictions.json"
+    # Wyliczamy uczciwą implikowaną szansę rynkową (usuwając overround) jeśli nie ma w ramce
+    if "fair_prob_home" not in df.columns:
+        inv_sum = (1.0 / df["odds_home"]) + (1.0 / df["odds_draw"]) + (1.0 / df["odds_away"])
+        df["fair_prob_home"] = ((1.0 / df["odds_home"]) / inv_sum).round(4)
     
-    df_out.to_csv(csv_file, index=False, encoding="utf-8")
-    with open(json_file, "w", encoding="utf-8") as f:
-        json.dump(preds, f, indent=2, ensure_ascii=False)
+    hover_cols = ["match", "league_name", "market_chosen", "rec_odd", "rec_prob", "rec_ev"] if "rec_odd" in df.columns else ["match", "odds_home", "current_ev"]
+    
+    y_col = "rec_prob" if "rec_prob" in df.columns else "prob_home"
+    size_col = "rec_odd" if "rec_odd" in df.columns else "odds_home"
 
-    logger.info("Pomyślnie wygenerowano predykcje. Pliki zapisano w katalogu: %s", out_path)
-    return df_out
+    fig = px.scatter(
+        df,
+        x="fair_prob_home",
+        y=y_col,
+        color="is_actionable",
+        color_discrete_map={True: "#10b981", False: "#6b7280"},
+        size=size_col,
+        hover_data=hover_cols,
+        labels={
+            "fair_prob_home": "Uczciwa szansa bukmachera (Implied Fair)",
+            y_col: "Pewność wybranego rynku inwestycyjnego (1X / DNB / 1)"
+        },
+        title="Rozkład szans: Punkty powyżej linii przerywanej to dodatnia wartość (Edge > 0)"
+    )
+    # Linia neutralna (x = y)
+    fig.add_shape(
+        type="line", line=dict(dash="dash", color="white", width=1.5),
+        x0=0, y0=0, x1=1, y1=1
+    )
+    fig.update_layout(height=500, template="plotly_dark")
+    st.plotly_chart(fig, use_container_width=True)
 
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="La Liga Production Walk-Forward Inference Pipeline")
-    parser.add_argument("--history", type=str, default="src/dashboard/matches_history.csv", help="Ścieżka do matches_history.csv")
-    parser.add_argument("--fixtures", type=str, default="src/dashboard/next_fixtures.csv", help="Ścieżka do next_fixtures.csv")
-    parser.add_argument("--output", type=str, default="artifacts", help="Folder wyjściowy dla artefaktów")
-    args = parser.parse_args()
-
-    run_pipeline(args.history, args.fixtures, args.output)
+    # Wykres EV wg meczów
+    st.subheader("Wartość Oczekiwana (EV) dla wyselekcjonowanych rynków")
+    bar_x = "rec_ev" if "rec_ev" in df.columns else "current_ev"
+    
+    fig_bar = px.bar(
+        df.sort_values(bar_x, ascending=True),
+        x=bar_x,
+        y="match",
+        orientation="h",
+        color="is_actionable",
+        color_discrete_map={True: "#10b981", False: "#ef4444"},
+        labels={bar_x: "Expected Value (EV)", "match": "Mecz"},
+        title="Wartość oczekiwana (Zielone: kwalifikuje się do portfela inwestycyjnego)"
+    )
+    fig_bar.add_vline(x=min_ev_input, line_dash="dash", line_color="yellow", annotation_text=f"Próg EV ({min_ev_input*100:.0f}%)")
+    fig_bar.update_layout(height=650, template="plotly_dark")
+    st.plotly_chart(fig_bar, use_container_width=True)

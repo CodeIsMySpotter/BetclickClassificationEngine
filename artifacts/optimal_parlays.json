@@ -1,0 +1,107 @@
+[
+  {
+    "combined_odds": 1.54,
+    "combined_prob": 0.8548,
+    "ev": 0.3164,
+    "stake_pct": 2.5,
+    "stake_units": 1.25,
+    "leg1": {
+      "match": "Roma vs Genoa",
+      "league": "Serie A (Włochy)",
+      "market": "DNB (Remis = Zwrot)",
+      "odd": 1.16,
+      "prob": 0.9781
+    },
+    "leg2": {
+      "match": "Arsenal vs Everton",
+      "league": "Premier League (Anglia)",
+      "market": "Czysta wygrana (1)",
+      "odd": 1.33,
+      "prob": 0.8739
+    }
+  },
+  {
+    "combined_odds": 1.53,
+    "combined_prob": 0.8432,
+    "ev": 0.2901,
+    "stake_pct": 2.5,
+    "stake_units": 1.25,
+    "leg1": {
+      "match": "Juventus vs Lazio",
+      "league": "Serie A (Włochy)",
+      "market": "1X (Win or Draw)",
+      "odd": 1.15,
+      "prob": 0.9649
+    },
+    "leg2": {
+      "match": "Arsenal vs Everton",
+      "league": "Premier League (Anglia)",
+      "market": "Czysta wygrana (1)",
+      "odd": 1.33,
+      "prob": 0.8739
+    }
+  },
+  {
+    "combined_odds": 1.57,
+    "combined_prob": 0.8364,
+    "ev": 0.3131,
+    "stake_pct": 2.5,
+    "stake_units": 1.25,
+    "leg1": {
+      "match": "Roma vs Genoa",
+      "league": "Serie A (Włochy)",
+      "market": "DNB (Remis = Zwrot)",
+      "odd": 1.16,
+      "prob": 0.9781
+    },
+    "leg2": {
+      "match": "Le Havre vs Auxerre",
+      "league": "Ligue 1 (Francja)",
+      "market": "1X (Win or Draw)",
+      "odd": 1.35,
+      "prob": 0.8551
+    }
+  },
+  {
+    "combined_odds": 1.5,
+    "combined_prob": 0.8356,
+    "ev": 0.2534,
+    "stake_pct": 2.5,
+    "stake_units": 1.25,
+    "leg1": {
+      "match": "Roma vs Genoa",
+      "league": "Serie A (Włochy)",
+      "market": "DNB (Remis = Zwrot)",
+      "odd": 1.16,
+      "prob": 0.9781
+    },
+    "leg2": {
+      "match": "Bournemouth vs Sunderland",
+      "league": "Premier League (Anglia)",
+      "market": "1X (Win or Draw)",
+      "odd": 1.29,
+      "prob": 0.8543
+    }
+  },
+  {
+    "combined_odds": 1.55,
+    "combined_prob": 0.8251,
+    "ev": 0.2789,
+    "stake_pct": 2.5,
+    "stake_units": 1.25,
+    "leg1": {
+      "match": "Juventus vs Lazio",
+      "league": "Serie A (Włochy)",
+      "market": "1X (Win or Draw)",
+      "odd": 1.15,
+      "prob": 0.9649
+    },
+    "leg2": {
+      "match": "Le Havre vs Auxerre",
+      "league": "Ligue 1 (Francja)",
+      "market": "1X (Win or Draw)",
+      "odd": 1.35,
+      "prob": 0.8551
+    }
+  }
+]
