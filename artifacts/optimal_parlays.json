@@ -1,52 +1,10 @@
 [
   {
-    "combined_odds": 1.49,
-    "combined_prob": 0.9027,
-    "ev": 0.345,
-    "stake_pct": 2.5,
-    "stake_units": 250.0,
-    "leg1": {
-      "match": "Lille vs Brest",
-      "league": "Ligue 1 (Francja)",
-      "market": "1X (Win or Draw)",
-      "odd": 1.24,
-      "prob": 0.9631
-    },
-    "leg2": {
-      "match": "Bayer Leverkusen vs Freiburg",
-      "league": "Bundesliga (Niemcy)",
-      "market": "1X (Win or Draw)",
-      "odd": 1.2,
-      "prob": 0.9373
-    }
-  },
-  {
-    "combined_odds": 1.49,
-    "combined_prob": 0.855,
-    "ev": 0.2739,
-    "stake_pct": 2.5,
-    "stake_units": 250.0,
-    "leg1": {
-      "match": "Lille vs Brest",
-      "league": "Ligue 1 (Francja)",
-      "market": "1X (Win or Draw)",
-      "odd": 1.24,
-      "prob": 0.9631
-    },
-    "leg2": {
-      "match": "Toulouse vs Troyes",
-      "league": "Ligue 1 (Francja)",
-      "market": "DNB (Remis = Zwrot)",
-      "odd": 1.2,
-      "prob": 0.8878
-    }
-  },
-  {
     "combined_odds": 1.54,
     "combined_prob": 0.8548,
     "ev": 0.3164,
     "stake_pct": 2.5,
-    "stake_units": 250.0,
+    "stake_units": 1.25,
     "leg1": {
       "match": "Roma vs Genoa",
       "league": "Serie A (Włochy)",
@@ -63,11 +21,32 @@
     }
   },
   {
-    "combined_odds": 1.59,
-    "combined_prob": 0.8545,
-    "ev": 0.3587,
+    "combined_odds": 1.53,
+    "combined_prob": 0.8432,
+    "ev": 0.2901,
     "stake_pct": 2.5,
-    "stake_units": 250.0,
+    "stake_units": 1.25,
+    "leg1": {
+      "match": "Juventus vs Lazio",
+      "league": "Serie A (Włochy)",
+      "market": "1X (Win or Draw)",
+      "odd": 1.15,
+      "prob": 0.9649
+    },
+    "leg2": {
+      "match": "Arsenal vs Everton",
+      "league": "Premier League (Anglia)",
+      "market": "Czysta wygrana (1)",
+      "odd": 1.33,
+      "prob": 0.8739
+    }
+  },
+  {
+    "combined_odds": 1.57,
+    "combined_prob": 0.8364,
+    "ev": 0.3131,
+    "stake_pct": 2.5,
+    "stake_units": 1.25,
     "leg1": {
       "match": "Roma vs Genoa",
       "league": "Serie A (Włochy)",
@@ -76,32 +55,53 @@
       "prob": 0.9781
     },
     "leg2": {
-      "match": "Paris FC vs Rennes",
+      "match": "Le Havre vs Auxerre",
       "league": "Ligue 1 (Francja)",
       "market": "1X (Win or Draw)",
-      "odd": 1.37,
-      "prob": 0.8736
+      "odd": 1.35,
+      "prob": 0.8551
     }
   },
   {
-    "combined_odds": 1.49,
-    "combined_prob": 0.846,
-    "ev": 0.2605,
+    "combined_odds": 1.5,
+    "combined_prob": 0.8356,
+    "ev": 0.2534,
     "stake_pct": 2.5,
-    "stake_units": 250.0,
+    "stake_units": 1.25,
     "leg1": {
-      "match": "Lille vs Brest",
-      "league": "Ligue 1 (Francja)",
-      "market": "1X (Win or Draw)",
-      "odd": 1.24,
-      "prob": 0.9631
+      "match": "Roma vs Genoa",
+      "league": "Serie A (Włochy)",
+      "market": "DNB (Remis = Zwrot)",
+      "odd": 1.16,
+      "prob": 0.9781
     },
     "leg2": {
-      "match": "Manchester United vs Bournemouth",
+      "match": "Bournemouth vs Sunderland",
       "league": "Premier League (Anglia)",
       "market": "1X (Win or Draw)",
-      "odd": 1.2,
-      "prob": 0.8784
+      "odd": 1.29,
+      "prob": 0.8543
+    }
+  },
+  {
+    "combined_odds": 1.55,
+    "combined_prob": 0.8251,
+    "ev": 0.2789,
+    "stake_pct": 2.5,
+    "stake_units": 1.25,
+    "leg1": {
+      "match": "Juventus vs Lazio",
+      "league": "Serie A (Włochy)",
+      "market": "1X (Win or Draw)",
+      "odd": 1.15,
+      "prob": 0.9649
+    },
+    "leg2": {
+      "match": "Le Havre vs Auxerre",
+      "league": "Ligue 1 (Francja)",
+      "market": "1X (Win or Draw)",
+      "odd": 1.35,
+      "prob": 0.8551
     }
   }
 ]

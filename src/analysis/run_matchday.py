@@ -145,14 +145,15 @@ class EnhancedInferenceEngine:
         self.config = config
         self.w_poisson = config.get("model_weights", {}).get("poisson", 0.93)
         self.w_lgbm = config.get("model_weights", {}).get("lightgbm", 0.07)
-        self.min_ev = config.get("strategy", {}).get("min_ev", 0.05)
+        self.min_ev = config.get("strategy", {}).get("min_ev", 0.04)
+        self.max_ev = config.get("strategy", {}).get("max_ev", 0.18)
         self.kelly_frac = config.get("strategy", {}).get("kelly_fraction", 0.25)
         self.cap_pct = config.get("strategy", {}).get("max_cap_pct", 0.035)
-        self.bankroll = config.get("general", {}).get("default_bankroll", 10000.0)
+        self.bankroll = config.get("general", {}).get("default_bankroll", 50.0)
         
-        self.min_odds = config.get("strategy", {}).get("min_odds", 1.20)
-        self.max_odds = config.get("strategy", {}).get("max_odds", 2.20)
-        self.min_model_prob = config.get("strategy", {}).get("min_model_prob", 0.50)
+        self.min_odds = config.get("strategy", {}).get("min_odds", 1.15)
+        self.max_odds = config.get("strategy", {}).get("max_odds", 1.85)
+        self.min_model_prob = config.get("strategy", {}).get("min_model_prob", 0.70)
         
         self.tax_rate = config.get("betclic", {}).get("tax_rate", 0.0)
         self.apply_tax = config.get("betclic", {}).get("apply_tax", True)
@@ -252,7 +253,7 @@ class EnhancedInferenceEngine:
         candidates = []
         
         # Kandydat A: 1X (Najwyższa ochrona kapitału, Win or Draw)
-        if prob_1x >= self.min_model_prob and (self.min_odds <= odd_1x <= self.max_odds) and ev_1x >= self.min_ev:
+        if prob_1x >= self.min_model_prob and (self.min_odds <= odd_1x <= self.max_odds) and (self.min_ev <= ev_1x <= self.max_ev):
             candidates.append({
                 "market_type": "1X (Win or Draw)",
                 "recommended_odd": odd_1x,
@@ -262,7 +263,7 @@ class EnhancedInferenceEngine:
             })
             
         # Kandydat B: DNB (Remis = Zwrot)
-        if prob_dnb >= self.min_model_prob and (self.min_odds <= odd_dnb <= self.max_odds) and ev_dnb >= self.min_ev:
+        if prob_dnb >= self.min_model_prob and (self.min_odds <= odd_dnb <= self.max_odds) and (self.min_ev <= ev_dnb <= self.max_ev):
             candidates.append({
                 "market_type": "DNB (Remis = Zwrot)",
                 "recommended_odd": odd_dnb,
@@ -272,7 +273,7 @@ class EnhancedInferenceEngine:
             })
 
         # Kandydat C: Czysta wygrana gospodarza (1)
-        if prob_h >= self.min_model_prob and (self.min_odds <= odd_h <= self.max_odds) and ev_home >= self.min_ev:
+        if prob_h >= self.min_model_prob and (self.min_odds <= odd_h <= self.max_odds) and (self.min_ev <= ev_home <= self.max_ev):
             candidates.append({
                 "market_type": "Czysta wygrana (1)",
                 "recommended_odd": odd_h,

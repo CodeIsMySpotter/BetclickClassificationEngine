@@ -86,25 +86,26 @@ config = load_config()
 default_bankroll = float(config.get("general", {}).get("default_bankroll", 50.0))
 bankroll = st.sidebar.number_input("Twój Bankroll (PLN)", min_value=10.0, max_value=100_000.0, value=default_bankroll, step=10.0, help="Twój całkowity budżet przeznaczony na grę (np. 50 zł)")
 
-min_ev_input = st.sidebar.slider("Minimalny Próg EV (%)", min_value=0.0, max_value=25.0, value=float(config.get("strategy", {}).get("min_ev", 0.05)) * 100, step=1.0) / 100.0
+min_ev_input = st.sidebar.slider("Minimalny Próg EV (%)", min_value=0.0, max_value=20.0, value=float(config.get("strategy", {}).get("min_ev", 0.04)) * 100, step=1.0) / 100.0
+max_ev_input = st.sidebar.slider("Maksymalny Próg EV - Filtr Pułapek (%)", min_value=5.0, max_value=35.0, value=float(config.get("strategy", {}).get("max_ev", 0.18)) * 100, step=1.0, help="Odrzuca podejrzanie wysokie EV (>18%), które często oznaczają pułapkę bukmachera (np. nagła kontuzja kluczowego gracza, rotacja składu).") / 100.0
 
 st.sidebar.markdown("### 🎯 Profil Ryzyka & Wariancja")
 odds_range = st.sidebar.slider(
     "Zakres kursów (Widełki)",
     min_value=1.10,
-    max_value=6.00,
-    value=(float(config.get("strategy", {}).get("min_odds", 1.25)), float(config.get("strategy", {}).get("max_odds", 2.20))),
+    max_value=3.50,
+    value=(float(config.get("strategy", {}).get("min_odds", 1.15)), float(config.get("strategy", {}).get("max_odds", 1.85))),
     step=0.05,
-    help="Ogranicza zakłady do bezpieczniejszych kursów (np. 1.30 - 2.00) eliminując dużą zmienność portfela."
+    help="Ogranicza zakłady do bezpieczniejszych kursów (1.15 - 1.85) eliminując dużą zmienność portfela."
 )
 
 min_win_prob_input = st.sidebar.slider(
     "Minimalna szansa modelu (%)",
-    min_value=30.0,
+    min_value=40.0,
     max_value=85.0,
-    value=float(config.get("strategy", {}).get("min_model_prob", 0.50)) * 100,
+    value=float(config.get("strategy", {}).get("min_model_prob", 0.70)) * 100,
     step=5.0,
-    help="Odrzuca typy o niskim prawdopodobieństwie sukcesu, gwarantując wysoki Win Rate."
+    help="Odrzuca typy o niskim prawdopodobieństwie sukcesu, gwarantując wysoki Win Rate i ochronę kapitału."
 ) / 100.0
 
 tax_free = st.sidebar.toggle("Gra bez podatku (0% tax)", value=(config.get("betclic", {}).get("tax_rate", 0.0) == 0.0))
@@ -158,9 +159,10 @@ eval_prob = df["rec_prob"] if "rec_prob" in df.columns else df["prob_home"]
 
 df["current_ev"] = eval_ev
 
-# Warunek decyzyjny łączący EV + Widełki kursowe + Minimalną szansę sukcesu
+# Warunek decyzyjny łączący EV + Filtr pułapek + Widełki kursowe + Minimalną szansę sukcesu
 df["is_actionable"] = (
     (eval_ev >= min_ev_input) &
+    (eval_ev <= max_ev_input) &
     (eval_odd >= odds_range[0]) &
     (eval_odd <= odds_range[1]) &
     (eval_prob >= min_win_prob_input)

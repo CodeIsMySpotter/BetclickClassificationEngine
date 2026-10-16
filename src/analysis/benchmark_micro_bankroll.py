@@ -111,13 +111,13 @@ def run_micro_bankroll_benchmark(initial_bankroll: float = 50.0, stake_pln: floa
             pnl = (stake_pln * (odd_h - 1.0)) if win else -stake_pln
             p_baseline.append({"win": win, "pnl": pnl, "stake": stake_pln, "odd": odd_h})
 
-        # 3. Capital Preservation Singles
+        # 3. Capital Preservation Singles z filtrem pułapek kursowych (0.04 <= EV <= 0.18)
         candidates = []
-        if prob_1x >= 0.70 and (1.15 <= odd_1x <= 1.85) and ev_1x >= 0.03:
+        if prob_1x >= 0.70 and (1.15 <= odd_1x <= 1.85) and (0.04 <= ev_1x <= 0.18):
             candidates.append({"type": "1X", "odd": odd_1x, "prob": prob_1x, "ev": ev_1x})
-        if prob_dnb >= 0.70 and (1.15 <= odd_dnb <= 1.85) and ev_dnb >= 0.03:
+        if prob_dnb >= 0.70 and (1.15 <= odd_dnb <= 1.85) and (0.04 <= ev_dnb <= 0.18):
             candidates.append({"type": "DNB", "odd": odd_dnb, "prob": prob_dnb, "ev": ev_dnb})
-        if prob_h >= 0.70 and (1.15 <= odd_h <= 1.85) and ev_h >= 0.03:
+        if prob_h >= 0.70 and (1.15 <= odd_h <= 1.85) and (0.04 <= ev_h <= 0.18):
             candidates.append({"type": "1", "odd": odd_h, "prob": prob_h, "ev": ev_h})
 
         if candidates:

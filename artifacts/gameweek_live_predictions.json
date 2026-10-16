@@ -45,19 +45,19 @@
     "prob_away": 0.095,
     "prob_1x": 0.9049,
     "prob_dnb": 0.8817,
-    "odds_home": 1.43,
-    "odds_draw": 4.85,
-    "odds_away": 6.1,
-    "odds_1x": 1.1,
+    "odds_home": 1.44,
+    "odds_draw": 4.8,
+    "odds_away": 6.0,
+    "odds_1x": 1.11,
     "odds_dnb": 1.14,
-    "ev_home": 0.0127,
-    "ev_1x": -0.0046,
+    "ev_home": 0.0198,
+    "ev_1x": 0.0044,
     "ev_dnb": 0.0051,
     "decision": "PASS",
     "market_chosen": "Brak",
-    "rec_odd": 1.43,
+    "rec_odd": 1.44,
     "rec_prob": 0.7082,
-    "rec_ev": 0.0127,
+    "rec_ev": 0.0198,
     "stake_pct": 0.0,
     "stake_units": 0.0
   },
@@ -115,13 +115,13 @@
     "ev_home": 0.5611,
     "ev_1x": 0.2117,
     "ev_dnb": 0.4663,
-    "decision": "EXECUTE_BET",
-    "market_chosen": "1X (Win or Draw)",
-    "rec_odd": 1.59,
-    "rec_prob": 0.7621,
-    "rec_ev": 0.2117,
-    "stake_pct": 3.5,
-    "stake_units": 350.0
+    "decision": "PASS",
+    "market_chosen": "Brak",
+    "rec_odd": 3.15,
+    "rec_prob": 0.4956,
+    "rec_ev": 0.5611,
+    "stake_pct": 0.0,
+    "stake_units": 0.0
   },
   {
     "league_name": "La Liga (Hiszpania)",
@@ -208,13 +208,13 @@
     "ev_home": 0.9037,
     "ev_1x": 0.3479,
     "ev_dnb": 0.7264,
-    "decision": "EXECUTE_BET",
-    "market_chosen": "1X (Win or Draw)",
-    "rec_odd": 1.67,
-    "rec_prob": 0.8071,
-    "rec_ev": 0.3479,
-    "stake_pct": 3.5,
-    "stake_units": 350.0
+    "decision": "PASS",
+    "market_chosen": "Brak",
+    "rec_odd": 3.22,
+    "rec_prob": 0.5912,
+    "rec_ev": 0.9037,
+    "stake_pct": 0.0,
+    "stake_units": 0.0
   },
   {
     "league_name": "La Liga (Hiszpania)",
@@ -276,7 +276,7 @@
     "rec_prob": 0.7355,
     "rec_ev": 0.0738,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "La Liga (Hiszpania)",
@@ -301,13 +301,13 @@
     "ev_home": 0.9155,
     "ev_1x": 0.3652,
     "ev_dnb": 0.779,
-    "decision": "EXECUTE_BET",
-    "market_chosen": "1X (Win or Draw)",
-    "rec_odd": 1.67,
-    "rec_prob": 0.8175,
-    "rec_ev": 0.3652,
-    "stake_pct": 3.5,
-    "stake_units": 350.0
+    "decision": "PASS",
+    "market_chosen": "Brak",
+    "rec_odd": 3.37,
+    "rec_prob": 0.5684,
+    "rec_ev": 0.9155,
+    "stake_pct": 0.0,
+    "stake_units": 0.0
   },
   {
     "league_name": "La Liga (Hiszpania)",
@@ -364,12 +364,12 @@
     "ev_1x": 0.0314,
     "ev_dnb": 0.0573,
     "decision": "EXECUTE_BET",
-    "market_chosen": "1X (Win or Draw)",
-    "rec_odd": 1.16,
-    "rec_prob": 0.8891,
-    "rec_ev": 0.0314,
+    "market_chosen": "DNB (Remis = Zwrot)",
+    "rec_odd": 1.23,
+    "rec_prob": 0.8596,
+    "rec_ev": 0.0573,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "La Liga (Hiszpania)",
@@ -400,7 +400,7 @@
     "rec_prob": 0.7699,
     "rec_ev": 0.0702,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "La Liga (Hiszpania)",
@@ -642,13 +642,13 @@
     "ev_home": 0.7189,
     "ev_1x": 0.3482,
     "ev_dnb": 0.6559,
-    "decision": "EXECUTE_BET",
-    "market_chosen": "1X (Win or Draw)",
-    "rec_odd": 1.65,
-    "rec_prob": 0.8171,
-    "rec_ev": 0.3482,
-    "stake_pct": 3.5,
-    "stake_units": 350.0
+    "decision": "PASS",
+    "market_chosen": "Brak",
+    "rec_odd": 3.03,
+    "rec_prob": 0.5673,
+    "rec_ev": 0.7189,
+    "stake_pct": 0.0,
+    "stake_units": 0.0
   },
   {
     "league_name": "Premier League (Anglia)",
@@ -727,19 +727,19 @@
     "prob_away": 0.0937,
     "prob_1x": 0.9063,
     "prob_dnb": 0.8951,
-    "odds_home": 1.23,
+    "odds_home": 1.22,
     "odds_draw": 6.6,
-    "odds_away": 9.5,
-    "odds_1x": 1.04,
+    "odds_away": 10.0,
+    "odds_1x": 1.03,
     "odds_dnb": 1.04,
-    "ev_home": -0.017,
-    "ev_1x": -0.0574,
+    "ev_home": -0.025,
+    "ev_1x": -0.0665,
     "ev_dnb": -0.0691,
     "decision": "PASS",
     "market_chosen": "Brak",
-    "rec_odd": 1.23,
+    "rec_odd": 1.22,
     "rec_prob": 0.7992,
-    "rec_ev": -0.017,
+    "rec_ev": -0.025,
     "stake_pct": 0.0,
     "stake_units": 0.0
   },
@@ -803,7 +803,7 @@
     "rec_prob": 0.8543,
     "rec_ev": 0.102,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "Premier League (Anglia)",
@@ -834,7 +834,7 @@
     "rec_prob": 0.9229,
     "rec_ev": 0.0706,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "Premier League (Anglia)",
@@ -1020,7 +1020,7 @@
     "rec_prob": 0.8739,
     "rec_ev": 0.1623,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "Premier League (Anglia)",
@@ -1051,7 +1051,7 @@
     "rec_prob": 0.7387,
     "rec_ev": 0.1302,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "Premier League (Anglia)",
@@ -1206,7 +1206,7 @@
     "rec_prob": 0.8784,
     "rec_ev": 0.0541,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "Premier League (Anglia)",
@@ -1231,13 +1231,13 @@
     "ev_home": 0.4949,
     "ev_1x": 0.1806,
     "ev_dnb": 0.369,
-    "decision": "EXECUTE_BET",
-    "market_chosen": "1X (Win or Draw)",
-    "rec_odd": 1.45,
-    "rec_prob": 0.8142,
-    "rec_ev": 0.1806,
-    "stake_pct": 3.5,
-    "stake_units": 350.0
+    "decision": "PASS",
+    "market_chosen": "Brak",
+    "rec_odd": 2.65,
+    "rec_prob": 0.5641,
+    "rec_ev": 0.4949,
+    "stake_pct": 0.0,
+    "stake_units": 0.0
   },
   {
     "league_name": "Bundesliga (Niemcy)",
@@ -1454,7 +1454,7 @@
     "rec_prob": 0.9373,
     "rec_ev": 0.1248,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "Bundesliga (Niemcy)",
@@ -1541,13 +1541,13 @@
     "ev_home": 0.0689,
     "ev_1x": 0.0127,
     "ev_dnb": 0.0315,
-    "decision": "EXECUTE_BET",
-    "market_chosen": "DNB (Remis = Zwrot)",
-    "rec_odd": 1.33,
-    "rec_prob": 0.7756,
-    "rec_ev": 0.0315,
-    "stake_pct": 2.39,
-    "stake_units": 238.64
+    "decision": "PASS",
+    "market_chosen": "Brak",
+    "rec_odd": 1.82,
+    "rec_prob": 0.5873,
+    "rec_ev": 0.0689,
+    "stake_pct": 0.0,
+    "stake_units": 0.0
   },
   {
     "league_name": "Bundesliga (Niemcy)",
@@ -1572,13 +1572,13 @@
     "ev_home": 0.0973,
     "ev_1x": 0.0238,
     "ev_dnb": 0.0388,
-    "decision": "EXECUTE_BET",
-    "market_chosen": "DNB (Remis = Zwrot)",
-    "rec_odd": 1.22,
-    "rec_prob": 0.8515,
-    "rec_ev": 0.0388,
-    "stake_pct": 3.5,
-    "stake_units": 350.0
+    "decision": "PASS",
+    "market_chosen": "Brak",
+    "rec_odd": 1.63,
+    "rec_prob": 0.6732,
+    "rec_ev": 0.0973,
+    "stake_pct": 0.0,
+    "stake_units": 0.0
   },
   {
     "league_name": "Bundesliga (Niemcy)",
@@ -1609,7 +1609,7 @@
     "rec_prob": 0.8211,
     "rec_ev": 0.051,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "Bundesliga (Niemcy)",
@@ -1640,7 +1640,7 @@
     "rec_prob": 0.7721,
     "rec_ev": 0.0578,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "Bundesliga (Niemcy)",
@@ -1702,7 +1702,7 @@
     "rec_prob": 0.8162,
     "rec_ev": 0.1672,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "Bundesliga (Niemcy)",
@@ -1733,7 +1733,7 @@
     "rec_prob": 0.7402,
     "rec_ev": 0.1399,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "Bundesliga (Niemcy)",
@@ -1813,13 +1813,13 @@
     "prob_1x": 0.8062,
     "prob_dnb": 0.7434,
     "odds_home": 5.6,
-    "odds_draw": 4.1,
+    "odds_draw": 4.15,
     "odds_away": 1.54,
-    "odds_1x": 2.37,
-    "odds_dnb": 4.23,
+    "odds_1x": 2.38,
+    "odds_dnb": 4.25,
     "ev_home": 2.145,
-    "ev_1x": 0.9107,
-    "ev_dnb": 2.1446,
+    "ev_1x": 0.9188,
+    "ev_dnb": 2.1594,
     "decision": "PASS",
     "market_chosen": "Brak",
     "rec_odd": 5.6,
@@ -1857,7 +1857,7 @@
     "rec_prob": 0.9781,
     "rec_ev": 0.1346,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "Serie A (Włochy)",
@@ -1888,7 +1888,7 @@
     "rec_prob": 0.8663,
     "rec_ev": 0.0482,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "Serie A (Włochy)",
@@ -1981,7 +1981,7 @@
     "rec_prob": 0.9649,
     "rec_ev": 0.1096,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "Serie A (Włochy)",
@@ -2037,13 +2037,13 @@
     "ev_home": 0.6763,
     "ev_1x": 0.1854,
     "ev_dnb": 0.4673,
-    "decision": "EXECUTE_BET",
-    "market_chosen": "1X (Win or Draw)",
-    "rec_odd": 1.55,
-    "rec_prob": 0.7648,
-    "rec_ev": 0.1854,
-    "stake_pct": 3.5,
-    "stake_units": 350.0
+    "decision": "PASS",
+    "market_chosen": "Brak",
+    "rec_odd": 3.17,
+    "rec_prob": 0.5288,
+    "rec_ev": 0.6763,
+    "stake_pct": 0.0,
+    "stake_units": 0.0
   },
   {
     "league_name": "Serie A (Włochy)",
@@ -2074,7 +2074,7 @@
     "rec_prob": 0.8361,
     "rec_ev": 0.0702,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "Serie A (Włochy)",
@@ -2105,7 +2105,7 @@
     "rec_prob": 0.7616,
     "rec_ev": 0.0586,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "Serie A (Włochy)",
@@ -2130,13 +2130,13 @@
     "ev_home": 0.5623,
     "ev_1x": 0.185,
     "ev_dnb": 0.4177,
-    "decision": "EXECUTE_BET",
-    "market_chosen": "1X (Win or Draw)",
-    "rec_odd": 1.5,
-    "rec_prob": 0.79,
-    "rec_ev": 0.185,
-    "stake_pct": 3.5,
-    "stake_units": 350.0
+    "decision": "PASS",
+    "market_chosen": "Brak",
+    "rec_odd": 2.95,
+    "rec_prob": 0.5296,
+    "rec_ev": 0.5623,
+    "stake_pct": 0.0,
+    "stake_units": 0.0
   },
   {
     "league_name": "Serie A (Włochy)",
@@ -2440,13 +2440,13 @@
     "ev_home": 0.5442,
     "ev_1x": 0.1942,
     "ev_dnb": 0.3018,
-    "decision": "EXECUTE_BET",
-    "market_chosen": "1X (Win or Draw)",
-    "rec_odd": 1.24,
-    "rec_prob": 0.9631,
-    "rec_ev": 0.1942,
-    "stake_pct": 3.5,
-    "stake_units": 350.0
+    "decision": "PASS",
+    "market_chosen": "Brak",
+    "rec_odd": 1.87,
+    "rec_prob": 0.8258,
+    "rec_ev": 0.5442,
+    "stake_pct": 0.0,
+    "stake_units": 0.0
   },
   {
     "league_name": "Ligue 1 (Francja)",
@@ -2539,7 +2539,7 @@
     "rec_prob": 0.8551,
     "rec_ev": 0.1544,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "Ligue 1 (Francja)",
@@ -2564,13 +2564,13 @@
     "ev_home": 0.4798,
     "ev_1x": 0.1968,
     "ev_dnb": 0.3569,
-    "decision": "EXECUTE_BET",
-    "market_chosen": "1X (Win or Draw)",
-    "rec_odd": 1.37,
-    "rec_prob": 0.8736,
-    "rec_ev": 0.1968,
-    "stake_pct": 3.5,
-    "stake_units": 350.0
+    "decision": "PASS",
+    "market_chosen": "Brak",
+    "rec_odd": 2.27,
+    "rec_prob": 0.6519,
+    "rec_ev": 0.4798,
+    "stake_pct": 0.0,
+    "stake_units": 0.0
   },
   {
     "league_name": "Ligue 1 (Francja)",
@@ -2663,7 +2663,7 @@
     "rec_prob": 0.8878,
     "rec_ev": 0.0654,
     "stake_pct": 3.5,
-    "stake_units": 350.0
+    "stake_units": 1.75
   },
   {
     "league_name": "Ligue 1 (Francja)",
@@ -3091,13 +3091,13 @@
     "ev_home": 0.9767,
     "ev_1x": 0.3785,
     "ev_dnb": 0.869,
-    "decision": "EXECUTE_BET",
-    "market_chosen": "1X (Win or Draw)",
-    "rec_odd": 1.77,
-    "rec_prob": 0.7788,
-    "rec_ev": 0.3785,
-    "stake_pct": 3.5,
-    "stake_units": 350.0
+    "decision": "PASS",
+    "market_chosen": "Brak",
+    "rec_odd": 3.83,
+    "rec_prob": 0.5161,
+    "rec_ev": 0.9767,
+    "stake_pct": 0.0,
+    "stake_units": 0.0
   },
   {
     "league_name": "Primeira Liga (Portugalia)",
