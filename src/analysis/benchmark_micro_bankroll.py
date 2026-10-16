@@ -257,6 +257,56 @@ def run_micro_bankroll_benchmark(initial_bankroll: float = 50.0, stake_pln: floa
             print(f"    Średni zysk miesięczny: {monthly_pnl:+.2f} PLN/miesiąc | Roczna stopa CAGR: {cagr:+.1f}%")
             print(f"    Status kapitału: [V] PRZETRWAŁ! Pełna ochrona kapitału przez {strat_years} roku bez bankructwa\n")
 
+    def evaluate_sprints(records: list, label: str, n_bets: int = 20, stake: float = 2.50):
+        if len(records) < n_bets:
+            return
+        sprints = []
+        for i in range(0, len(records) - n_bets + 1, n_bets):
+            window = records[i:i + n_bets]
+            pnl = sum((w["pnl"] / stake_pln) * stake for w in window)
+            wins = sum(1 for w in window if w["win"] == 1)
+            refunds = sum(1 for w in window if w["win"] == 0.5)
+            wr = (wins / n_bets) * 100.0
+            surv = ((wins + refunds) / n_bets) * 100.0
+            
+            s_date = pd.to_datetime(window[0]["date"]).date()
+            e_date = pd.to_datetime(window[-1]["date"]).date()
+            days = (e_date - s_date).days
+
+            cum = np.cumsum([(w["pnl"] / stake_pln) * stake for w in window])
+            peak = np.maximum.accumulate(cum)
+            dd = np.min(cum - peak)
+            min_bal = initial_bankroll + np.min(cum)
+            busted = min_bal <= 0
+
+            sprints.append({
+                "pnl": pnl, "wr": wr, "surv": surv, "days": days,
+                "min_bal": min_bal, "dd": dd, "busted": busted
+            })
+
+        df_s = pd.DataFrame(sprints)
+        n_total = len(df_s)
+        n_prof = len(df_s[df_s["pnl"] > 0])
+        n_bust = len(df_s[df_s["busted"] == True])
+        
+        avg_p = df_s["pnl"].mean()
+        max_p = df_s["pnl"].max()
+        min_p = df_s["pnl"].min()
+        avg_wr = df_s["wr"].mean()
+        avg_days = df_s["days"].mean()
+        avg_dd = df_s["dd"].mean()
+
+        print(f"[*] {label.upper()} (Stawka: {stake:.2f} PLN / kupon)")
+        print(f"    Liczba rozegranych sesji 20-betowych w historii: {n_total} prób")
+        print(f"    Średni czas realizacji 20 betów: ~{avg_days:.0f} dni (~1 miesiąc ligowy)")
+        print(f"    SZANSA ZAKOŃCZENIA MIESIĄCA NA PLUSIE: {n_prof / n_total * 100:.1f}% ({n_prof}/{n_total} sesji zyskiem)")
+        print(f"    Średni stan konta po 20 betach: {initial_bankroll + avg_p:.2f} PLN (Średni zysk: {avg_p:+.2f} PLN | ROI: {avg_p/initial_bankroll*100:+.1f}%)")
+        print(f"    Najlepszy miesiąc: {initial_bankroll + max_p:.2f} PLN ({max_p:+.2f} PLN)")
+        print(f"    Najgorszy miesiąc: {initial_bankroll + min_p:.2f} PLN ({min_p:+.2f} PLN)")
+        print(f"    Średnia skuteczność trafień: {avg_wr:.1f}%")
+        print(f"    Średnie maksymalne obsunięcie w trakcie miesiąca: {avg_dd:.2f} PLN")
+        print(f"    Ryzyko wyzerowania kapitału 50 PLN: {n_bust / n_total * 100:.1f}%\n")
+
     print("\n" + "=" * 96)
     print(f"BENCHMARK MIKRO-PORTFELA: START = {initial_bankroll:.2f} PLN (Stawka płaska = {stake_pln:.2f} PLN / kupon)")
     print(f"HORYZONT CZASOWY CAŁEJ SESJI: {global_start} do {global_end} ({global_days} dni | ~{global_months} miesięcy | {global_years} roku)")
@@ -266,6 +316,14 @@ def run_micro_bankroll_benchmark(initial_bankroll: float = 50.0, stake_pln: floa
     evaluate(p_baseline, "2. Baseline (Czysta 1)")
     evaluate(p_singles, "3. Capital Preservation Singles (1X / DNB)")
     evaluate(p_parlays, "4. Optymalne Duble (2-Leg Parlay Dixon-Coles)")
+
+    print("\n" + "=" * 96)
+    print(f"MIESIĘCZNY SPRINT: '20 BETÓW I KONIEC' (Start = {initial_bankroll:.2f} PLN)")
+    print("Symulacja 20-zakładowych wyzwań inwestycyjnych na przestrzeni 4 lat")
+    print("=" * 96)
+    evaluate_sprints(p_parlays, "Optymalne Duble (Stawka 2.50 PLN = 5% banku)", n_bets=20, stake=2.50)
+    evaluate_sprints(p_parlays, "Optymalne Duble (Stawka 4.00 PLN = 8% banku)", n_bets=20, stake=4.00)
+    evaluate_sprints(p_singles, "Capital Preservation Singles (Stawka 2.50 PLN = 5% banku)", n_bets=20, stake=2.50)
     print("=" * 96 + "\n")
 
 
