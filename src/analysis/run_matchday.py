@@ -214,25 +214,77 @@ class EnhancedInferenceEngine:
         inv_sum = (1.0 / odd_h) + (1.0 / odd_x) + (1.0 / odd_a)
         fair_h = round((1.0 / odd_h) / inv_sum, 4)
 
+        # 1. Prawdopodobieństwo i syntetyczny kurs na 1X (Win or Draw)
+        prob_1x = round(prob_h + prob_x, 4)
+        # Syntetyczny kurs 1X = 1 / ((1/odd_h) + (1/odd_x))
+        odd_1x = round(1.0 / ((1.0 / odd_h) + (1.0 / odd_x)), 2)
+
+        # 2. Prawdopodobieństwo i kurs na Draw No Bet (DNB - Remis = Zwrot)
+        prob_dnb = round(prob_h / (prob_h + prob_a), 4) if (prob_h + prob_a) > 0 else 0.5
+        # Syntetyczny kurs DNB = odd_h * (1 - 1/odd_x)
+        odd_dnb = round(odd_h * (1.0 - (1.0 / odd_x)), 2) if odd_x > 1.0 else odd_h
+
         tax_multiplier = (1.0 - self.tax_rate) if self.apply_tax else 1.0
+
+        # Wartości oczekiwane (EV) dla każdego wariantu
         ev_home = round((prob_h * (odd_h * tax_multiplier)) - 1.0, 4)
-        ev_home_gross = round((prob_h * odd_h) - 1.0, 4)
+        ev_1x = round((prob_1x * (odd_1x * tax_multiplier)) - 1.0, 4)
+        ev_dnb = round((prob_dnb * (odd_dnb * tax_multiplier)) - 1.0, 4)
 
-        has_value = ev_home >= self.min_ev
-        in_odds_range = self.min_odds <= odd_h <= self.max_odds
-        high_win_prob = prob_h >= self.min_model_prob
+        # Ocena profilu inwestycyjnego (Capital Preservation):
+        # Preferujemy rynek o najwyższej pewności (prob >= min_model_prob), dodatnim EV i w bezpiecznym zakresie kursów
+        candidates = []
+        
+        # Kandydat A: 1X (Najwyższa ochrona kapitału, Win or Draw)
+        if prob_1x >= self.min_model_prob and (self.min_odds <= odd_1x <= self.max_odds) and ev_1x >= self.min_ev:
+            candidates.append({
+                "market_type": "1X (Win or Draw)",
+                "recommended_odd": odd_1x,
+                "win_prob": prob_1x,
+                "ev": ev_1x,
+                "b": (odd_1x * tax_multiplier) - 1.0
+            })
+            
+        # Kandydat B: DNB (Remis = Zwrot)
+        if prob_dnb >= self.min_model_prob and (self.min_odds <= odd_dnb <= self.max_odds) and ev_dnb >= self.min_ev:
+            candidates.append({
+                "market_type": "DNB (Remis = Zwrot)",
+                "recommended_odd": odd_dnb,
+                "win_prob": prob_dnb,
+                "ev": ev_dnb,
+                "b": (odd_dnb * tax_multiplier) - 1.0
+            })
 
-        is_target = has_value and in_odds_range and high_win_prob
+        # Kandydat C: Czysta wygrana gospodarza (1)
+        if prob_h >= self.min_model_prob and (self.min_odds <= odd_h <= self.max_odds) and ev_home >= self.min_ev:
+            candidates.append({
+                "market_type": "Czysta wygrana (1)",
+                "recommended_odd": odd_h,
+                "win_prob": prob_h,
+                "ev": ev_home,
+                "b": (odd_h * tax_multiplier) - 1.0
+            })
 
-        if is_target:
+        if candidates:
+            # Sortujemy wg szansy wygranej (bezpieczeństwo kapitału), a przy zbliżonej szansie wg EV
+            best = sorted(candidates, key=lambda c: (c["win_prob"], c["ev"]), reverse=True)[0]
             decision = "EXECUTE_BET"
-            effective_b = (odd_h * tax_multiplier) - 1.0
-            full_k = ev_home / effective_b if effective_b > 0 else 0.0
+            market_chosen = best["market_type"]
+            rec_odd = best["recommended_odd"]
+            rec_prob = best["win_prob"]
+            rec_ev = best["ev"]
+            
+            effective_b = best["b"]
+            full_k = rec_ev / effective_b if effective_b > 0 else 0.0
             adj_k = min(self.cap_pct, full_k * self.kelly_frac)
             stake_units = round(adj_k * self.bankroll, 2)
             stake_pct = round(adj_k * 100.0, 2)
         else:
             decision = "PASS"
+            market_chosen = "Brak"
+            rec_odd = odd_h
+            rec_prob = prob_h
+            rec_ev = ev_home
             stake_units = 0.0
             stake_pct = 0.0
 
@@ -249,16 +301,21 @@ class EnhancedInferenceEngine:
             "prob_home": prob_h,
             "prob_draw": prob_x,
             "prob_away": prob_a,
-            "prob_over_25": round(prob_over_25, 4),
-            "prob_under_25": round(prob_under_25, 4),
-            "prob_dnb_home": round(prob_dnb_h, 4),
+            "prob_1x": prob_1x,
+            "prob_dnb": prob_dnb,
             "odds_home": odd_h,
             "odds_draw": odd_x,
             "odds_away": odd_a,
-            "fair_prob_home": fair_h,
-            "ev_home_gross": ev_home_gross,
-            "ev_home_net": ev_home,
+            "odds_1x": odd_1x,
+            "odds_dnb": odd_dnb,
+            "ev_home": ev_home,
+            "ev_1x": ev_1x,
+            "ev_dnb": ev_dnb,
             "decision": decision,
+            "market_chosen": market_chosen,
+            "rec_odd": rec_odd,
+            "rec_prob": rec_prob,
+            "rec_ev": rec_ev,
             "stake_pct": stake_pct,
             "stake_units": stake_units,
         }
@@ -305,17 +362,18 @@ def run_matchday_pipeline():
     # 5. Podsumowanie decyzji
     bets_to_execute = df_results[df_results["decision"] == "EXECUTE_BET"]
     print("\n" + "=" * 80)
-    print("MULTI-LEAGUE RAPORT DECYZYJNY (La Liga, Premier League, Bundesliga)")
-    print(f"Zakres kursów: {engine.min_odds:.2f} - {engine.max_odds:.2f} | Min Prob: {engine.min_model_prob*100:.0f}%")
+    print("PORTFEL INWESTYCYJNY: CAPITAL PRESERVATION (1X / DNB / 1)")
+    print(f"Zakres kursów: {engine.min_odds:.2f} - {engine.max_odds:.2f} | Min Pewność: {engine.min_model_prob*100:.0f}%")
     print("=" * 80)
     if bets_to_execute.empty:
         print("Brak rekomendowanych zakładów o zadanych kryteriach w tej kolejce.")
     else:
-        print(f"Znaleziono {len(bets_to_execute)} rekomendowanych pozycji:")
+        print(f"Znaleziono {len(bets_to_execute)} ultra-stabilnych pozycji inwestycyjnych:")
         for _, b in bets_to_execute.iterrows():
             print(f"[*] [{b['league_name']}] {b['match']} ({b['match_date']})")
-            print(f"    Kurs Betclic: {b['odds_home']} | Szansa modelu: {b['prob_home']*100:.1f}%")
-            print(f"    EV Netto: {b['ev_home_net']*100:+.2f}% | Stawka Kelly: {b['stake_pct']}% ({b['stake_units']} PLN)\n")
+            print(f"    Rekomendowany rynek: >>> {b['market_chosen']} <<<")
+            print(f"    Kurs: {b['rec_odd']} | Pewność modelu: {b['rec_prob']*100:.1f}% | EV: {b['rec_ev']*100:+.2f}%")
+            print(f"    Stawka Quarter-Kelly: {b['stake_pct']}% bankrolla ({b['stake_units']} PLN)\n")
     print("=" * 80 + "\n")
     return df_results
 

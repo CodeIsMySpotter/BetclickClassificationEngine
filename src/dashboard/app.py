@@ -181,49 +181,52 @@ st.markdown("---")
 tab_bets, tab_all, tab_visuals = st.tabs(["🎯 Rekomendacje do zagrania", "📋 Pełna tabela spotkań", "📊 Wykresy i Rozkłady"])
 
 with tab_bets:
-    st.subheader("Rekomendowane pozycje (Strategia Home Only + EV Filter)")
+    st.subheader("🛡️ Portfel Inwestycyjny: Capital Preservation (1X / DNB / 1)")
+    st.caption("Filtry: Pewność modelu ≥ 70%, kursy 1.15 - 1.85, minimalizacja wariancji kapitału")
     if actionable_df.empty:
-        st.info("Brak spotkań spełniających zadany próg EV. Zmień minimalny próg EV w pasku bocznym lub odśwież ofertę.")
+        st.info("Brak spotkań spełniających zadane kryteria. Możesz poluzować suwaki w pasku bocznym.")
     else:
-        # Prezentacja kart spotkań
         for _, row in actionable_df.iterrows():
             with st.container():
                 c1, c2, c3, c4 = st.columns([3, 2, 2, 2])
                 with c1:
                     league_badge = f"[{row.get('league_name', 'La Liga')}] "
                     st.markdown(f"### **{league_badge}{row['match']}**")
+                    market_txt = row.get("market_chosen", "1X (Win or Draw)")
+                    st.markdown(f"🎯 **Rekomendowany typ: <span style='color:#10b981; font-size:1.15em;'>{market_txt}</span>**", unsafe_allow_html=True)
                     st.caption(f"📅 Data: {row['match_date']} | Bilans xG 5m: {row['roll_xg_diff_5m']:+.2f} | Różnica Elo: {row['elo_diff']:+.1f}")
                 with c2:
-                    st.metric("Kurs Betclic", f"{row['odds_home']:.2f}")
-                    st.caption(f"Implikowany: {row['fair_prob_home']*100:.1f}%")
+                    st.metric("Kurs Zakładu", f"{row.get('rec_odd', row['odds_home']):.2f}")
+                    st.caption(f"1X: {row.get('odds_1x', 1.25)} | DNB: {row.get('odds_dnb', 1.30)} | 1: {row['odds_home']:.2f}")
                 with c3:
-                    st.metric("Szansa Modelu", f"{row['prob_home']*100:.1f}%", f"EV: {row['current_ev']*100:+.1f}%")
-                    st.caption(f"Remis: {row['prob_draw']*100:.1f}% | Wyjazd: {row['prob_away']*100:.1f}%")
+                    rec_p = row.get("rec_prob", row["prob_home"]) * 100
+                    rec_ev = row.get("rec_ev", row["current_ev"]) * 100
+                    st.metric("Pewność Modelu", f"{rec_p:.1f}%", f"EV: {rec_ev:+.1f}%")
+                    st.caption(f"Szansa 1X: {row.get('prob_1x', 0.8)*100:.1f}% | Szansa DNB: {row.get('prob_dnb', 0.8)*100:.1f}%")
                 with c4:
                     st.metric("Stawka (Quarter-Kelly)", f"{row['stake_units_calc']:.2f} PLN", f"{row['stake_pct_calc']:.2f}% banku")
                 st.markdown("---")
 
 with tab_all:
-    st.subheader("Wszystkie analizowane spotkania z Betclic")
+    st.subheader("Wszystkie analizowane spotkania ze wszystkich lig")
     
     display_df = df.copy()
-    display_df["EV (%)"] = (display_df["current_ev"] * 100).round(1)
-    display_df["Model Dom (%)"] = (display_df["prob_home"] * 100).round(1)
-    display_df["Model Remis (%)"] = (display_df["prob_draw"] * 100).round(1)
-    display_df["Model Wyjazd (%)"] = (display_df["prob_away"] * 100).round(1)
-    display_df["Over 2.5 (%)"] = (display_df["prob_over_25"] * 100).round(1)
-    display_df["Draw No Bet Dom (%)"] = (display_df["prob_dnb_home"] * 100).round(1)
+    display_df["Pewność (%)"] = (display_df["rec_prob"] * 100).round(1) if "rec_prob" in display_df.columns else (display_df["prob_home"] * 100).round(1)
+    display_df["EV (%)"] = (display_df["rec_ev"] * 100).round(1) if "rec_ev" in display_df.columns else (display_df["current_ev"] * 100).round(1)
+    display_df["Kurs Rekomendowany"] = display_df["rec_odd"] if "rec_odd" in display_df.columns else display_df["odds_home"]
+    display_df["Rekomendowany Rynek"] = display_df["market_chosen"] if "market_chosen" in display_df.columns else "1X"
+    display_df["Szansa 1X (%)"] = (display_df["prob_1x"] * 100).round(1) if "prob_1x" in display_df.columns else 0.0
+    display_df["Szansa DNB (%)"] = (display_df["prob_dnb"] * 100).round(1) if "prob_dnb" in display_df.columns else 0.0
     display_df["Stawka (PLN)"] = display_df["stake_units_calc"]
-    display_df["Decyzja"] = display_df["is_actionable"].map({True: "✅ ZAGRAJ", False: "❌ ODPUŚĆ"})
+    display_df["Status"] = display_df["is_actionable"].map({True: "✅ REKOMENDOWANY", False: "❌ ODPUŚĆ"})
 
     cols_to_show = [
-        "league_name", "match_date", "match", "odds_home", "odds_draw", "odds_away",
-        "Model Dom (%)", "Model Remis (%)", "Model Wyjazd (%)",
-        "Over 2.5 (%)", "Draw No Bet Dom (%)", "EV (%)", "Decyzja", "Stawka (PLN)"
+        "league_name", "match_date", "match", "Rekomendowany Rynek", "Kurs Rekomendowany",
+        "Pewność (%)", "EV (%)", "Szansa 1X (%)", "Szansa DNB (%)", "Status", "Stawka (PLN)"
     ]
 
     st.dataframe(
-        display_df[cols_to_show].sort_values("EV (%)", ascending=False),
+        display_df[cols_to_show].sort_values("Pewność (%)", ascending=False),
         use_container_width=True,
         hide_index=True
     )

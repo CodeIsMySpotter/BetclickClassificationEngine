@@ -29,19 +29,21 @@ betclic:
   apply_tax: true
 
 strategy:
-  # Minimalny próg EV kwalifikujący zakład (np. 0.05 = +5%)
-  min_ev: 0.05
+  # Tryb silnika: 'capital_preservation' (1X / DNB / Win or Draw) lub 'home_only'
+  mode: "capital_preservation"
+  # Minimalny próg EV kwalifikujący zakład (np. 0.03 = +3% dla ultra-bezpiecznych rynków)
+  min_ev: 0.03
   # Frakcja kryterium Kelly'ego (Quarter-Kelly = 0.25)
   kelly_fraction: 0.25
   # Maksymalny procent bankrolla na pojedyncze zdarzenie (3.5%)
   max_cap_pct: 0.035
-  # Widełki kursowe dla stabilnego profilu o niskiej wariancji (np. faworyci 1.20 - 2.20)
-  min_odds: 1.20
-  max_odds: 2.20
-  # Minimalne prawdopodobieństwo wygranej modelu (wysoki win-rate)
-  min_model_prob: 0.50
-  # Dozwolone rynki: ['home_only', 'home_and_dnb', 'all_positive_ev']
-  market_policy: "home_only"
+  # Widełki kursowe dla profilu inwestycyjnego (stabilne kursy np. 1.15 - 1.65)
+  min_odds: 1.15
+  max_odds: 1.85
+  # Minimalne prawdopodobieństwo wygranej modelu (np. 70% dla wysokiej skuteczności)
+  min_model_prob: 0.70
+  # Preferowane rynki inwestycyjne
+  allowed_markets: ["1X_double_chance", "dnb_home", "home_straight"]
 
 model_weights:
   poisson: 0.93
