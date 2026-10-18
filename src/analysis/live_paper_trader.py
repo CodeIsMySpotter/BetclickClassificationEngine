@@ -17,7 +17,7 @@ import json
 import logging
 from pathlib import Path
 import sys
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 import requests
@@ -475,6 +475,175 @@ def run_ytd_historical_replay(num_matchdays: int = 15, budget_per_day: float = 5
     print(f"\n[OK] Zapisano szczegolowe dane osi czasu do: {replay_file}")
     print("=" * 105 + "\n")
     return replay_artifact
+
+
+def fetch_recent_engine_picks(
+    num_bets: int = 20,
+    strategy_mode: str = "safest_pewniaki",
+    daily_budget: float = 50.0,
+    slate_size: int = 5,
+    min_prob: float = 0.70,
+    min_ev: float = 0.04,
+    max_ev: float = 0.18,
+    min_odds: float = 1.15,
+    max_odds: float = 1.85,
+    force_refresh: bool = False
+) -> Dict[str, Any]:
+    """Gathers the exact last N engine bets by scanning completed matches backwards in time."""
+    cache_file = ARTIFACTS_DIR / f"recent_engine_picks_{strategy_mode}_{num_bets}.json"
+    if cache_file.exists() and not force_refresh:
+        try:
+            with open(cache_file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+
+    parquet_file = BASE_DIR / "data" / "processed" / "matches_merged.parquet"
+    if not parquet_file.exists():
+        raise FileNotFoundError(f"Brak pliku danych: {parquet_file}")
+
+    df = pd.read_parquet(parquet_file).dropna(subset=["B365H", "B365D", "B365A", "FTHG", "FTAG", "FTR"]).copy()
+    df["match_date"] = pd.to_datetime(df["match_date"])
+    # Sort dates descending (newest first)
+    matchday_dates = sorted(df["match_date"].dt.date.unique(), reverse=True)
+
+    import yaml
+    with open(BASE_DIR / "config" / "config.yaml", "r", encoding="utf-8") as f:
+        config = yaml.safe_load(f)
+
+    optimizer = DayReturnOptimizer(
+        min_probability=min_prob,
+        min_ev=min_ev,
+        max_ev=max_ev,
+        min_odds=min_odds,
+        max_odds=max_odds
+    )
+    engine = FootballInferenceEngine(config=config)
+
+    collected_bets = []
+    scanned_days = 0
+
+    for m_date in matchday_dates:
+        if len(collected_bets) >= num_bets:
+            break
+        df_day = df[df["match_date"].dt.date == m_date]
+        if len(df_day) < 2:
+            continue
+        scanned_days += 1
+
+        events = []
+        scores_by_event = {}
+        for idx, row in df_day.iterrows():
+            oh, ox, oa = float(row["B365H"]), float(row["B365D"]), float(row["B365A"])
+            o_1x = round(1.0 / ((1.0/oh) + (1.0/ox)), 2)
+            o_dnb = round(oh * (1.0 - (1.0/ox)), 2) if ox > 1.0 else oh
+            odds = {"1": oh, "X": ox, "2": oa, "1X": o_1x, "DNB": o_dnb}
+            
+            ev_id = f"hist_{idx}"
+            from src.core.domain import MatchEvent, SportType
+            ev = MatchEvent(
+                event_id=ev_id,
+                sport=SportType.FOOTBALL,
+                league_name="La Liga",
+                home_competitor=row["home_team"],
+                away_competitor=row["away_team"],
+                event_date=m_date,
+                odds=odds,
+                metadata={"ftr": row["FTR"]}
+            )
+            events.append(ev)
+            scores_by_event[ev_id] = {
+                "fthg": int(row["FTHG"]),
+                "ftag": int(row["FTAG"]),
+                "ftr": str(row["FTR"])
+            }
+
+        opps = engine.evaluate_all(events)
+        if not opps:
+            continue
+
+        slate = optimizer.optimize_daily_slate(
+            opportunities=opps,
+            target_date=m_date,
+            daily_budget=daily_budget,
+            slate_size=slate_size,
+            selection_mode=strategy_mode
+        )
+
+        for b in slate.selections:
+            if len(collected_bets) >= num_bets:
+                break
+            score_info = scores_by_event.get(b.event_id, {"fthg": 0, "ftag": 0, "ftr": "H"})
+            status, pnl = resolve_bet_outcome(b.market_name, b.odds, b.recommended_stake_pln, score_info["ftr"])
+            collected_bets.append({
+                "date": str(m_date),
+                "match": b.match_display,
+                "league": b.league_name,
+                "market": b.market_name,
+                "odds": b.odds,
+                "fair_odds": b.fair_odds,
+                "model_prob": round(b.model_probability * 100, 1),
+                "ev": round(b.expected_value * 100, 1),
+                "stake_pln": round(b.recommended_stake_pln, 2),
+                "status": status,
+                "score": f"{score_info['fthg']}:{score_info['ftag']}",
+                "pnl": round(pnl, 2),
+                "strategy": strategy_mode,
+                "strategy_name": "PEWNIAKI (Safest)" if strategy_mode == "safest_pewniaki" else ("ZWROT (Max EV)" if strategy_mode == "max_return" else "SHARPE (Balanced)"),
+                "rationale": b.rationale
+            })
+
+    # Sort collected bets chronologically (oldest to newest)
+    collected_bets_chrono = sorted(collected_bets, key=lambda x: x["date"])
+    
+    # Calculate running cumulative balance
+    running_balance = daily_budget
+    timeline = []
+    for b in collected_bets_chrono:
+        running_balance = round(running_balance + b["pnl"], 2)
+        b["running_balance"] = running_balance
+        timeline.append({
+            "date": b["date"],
+            "match": b["match"],
+            "pnl": b["pnl"],
+            "running_balance": running_balance
+        })
+
+    won = sum(1 for b in collected_bets if b["status"] == "WON")
+    lost = sum(1 for b in collected_bets if b["status"] == "LOST")
+    refunded = sum(1 for b in collected_bets if b["status"] == "REFUNDED")
+    tot_stake = round(sum(b["stake_pln"] for b in collected_bets), 2)
+    net_pnl = round(sum(b["pnl"] for b in collected_bets), 2)
+    win_rate = round(won / (won + lost) * 100.0, 1) if (won + lost) > 0 else 0.0
+    roi = round(net_pnl / tot_stake * 100.0, 2) if tot_stake > 0 else 0.0
+
+    result_payload = {
+        "generated_at": datetime.datetime.now().isoformat(),
+        "requested_bets": num_bets,
+        "actual_bets": len(collected_bets),
+        "scanned_matchdays": scanned_days,
+        "strategy": strategy_mode,
+        "summary": {
+            "total_bets": len(collected_bets),
+            "won": won,
+            "lost": lost,
+            "refunded": refunded,
+            "win_rate_pct": win_rate,
+            "total_stake_pln": tot_stake,
+            "net_pnl_pln": net_pnl,
+            "roi_pct": roi,
+            "start_balance": daily_budget,
+            "end_balance": running_balance
+        },
+        "bets": collected_bets,
+        "bets_chrono": collected_bets_chrono,
+        "timeline": timeline
+    }
+
+    with open(cache_file, "w", encoding="utf-8") as f:
+        json.dump(result_payload, f, indent=2, ensure_ascii=False)
+
+    return result_payload
 
 
 if __name__ == "__main__":

@@ -422,14 +422,18 @@ with tab_timeline:
     with tl_col1:
         data_source = st.radio(
             "Źródło danych osi czasu:",
-            options=["⏪ Replay 2026 (Walk-Forward na 20 kolejkach)", "🟢 Kampania Na Żywo (Forward Paper Trading)"],
+            options=[
+                "📜 Ostatnie N zakładów wstecz (Historia typów)",
+                "⏪ Replay 2026 (Walk-Forward na 20 kolejkach)",
+                "🟢 Kampania Na Żywo (Forward Paper Trading)"
+            ],
             index=0,
             horizontal=False
         )
     with tl_col2:
         strat_choice = st.selectbox(
             "Strategia:",
-            options=["Wszystkie strategie", "🛡️ PEWNIAKI (Safest)", "💰 ZWROT (Max EV)", "⚖️ SHARPE (Balanced)"],
+            options=["🛡️ PEWNIAKI (Safest)", "💰 ZWROT (Max EV)", "⚖️ SHARPE (Balanced)", "Wszystkie strategie"],
             index=0
         )
     with tl_col3:
@@ -441,12 +445,45 @@ with tab_timeline:
     with tl_col4:
         search_kw = st.text_input("🔍 Filtruj po meczu / drużynie:", placeholder="np. Real, Arsenal, Juventus...")
 
+    strat_key_map = {
+        "🛡️ PEWNIAKI (Safest)": "safest_pewniaki",
+        "💰 ZWROT (Max EV)": "max_return",
+        "⚖️ SHARPE (Balanced)": "balanced_sharpe"
+    }
+    target_strat_key = strat_key_map.get(strat_choice, "safest_pewniaki")
+
     # Pobieranie danych
     timeline_records = []
     bets_pool = []
     initial_budget = float(bankroll)
+    is_recent_picks_mode = data_source.startswith("📜")
 
-    if data_source.startswith("⏪"):
+    if is_recent_picks_mode:
+        ctrl1, ctrl2, ctrl3 = st.columns([3, 2, 3])
+        with ctrl1:
+            num_bets_to_fetch = st.slider("Liczba ostatnich zakładów wstecz do analizy:", min_value=5, max_value=50, value=20, step=5)
+        with ctrl2:
+            force_calc = st.button("🔄 Przelicz / Zassij historię wstecz")
+        with ctrl3:
+            st.caption(f"Pobiera dokładnie **{num_bets_to_fetch}** zweryfikowanych typów silnika z ostatnich rozegranych meczów.")
+
+        from src.analysis.live_paper_trader import fetch_recent_engine_picks
+        recent_data = fetch_recent_engine_picks(
+            num_bets=num_bets_to_fetch,
+            strategy_mode=target_strat_key,
+            daily_budget=initial_budget,
+            min_prob=min_win_prob_input,
+            min_ev=min_ev_input,
+            max_ev=max_ev_input,
+            min_odds=odds_range[0],
+            max_odds=odds_range[1],
+            force_refresh=force_calc
+        )
+        bets_pool = recent_data.get("bets", [])
+        timeline_records = recent_data.get("timeline", [])
+        initial_budget = recent_data.get("summary", {}).get("start_balance", initial_budget)
+
+    elif data_source.startswith("⏪"):
         if not REPLAY_TIMELINE_JSON.exists():
             st.warning("Brak zapisanego pliku osi czasu Replay 2026. Kliknij poniższy przycisk, aby go wygenerować.")
             if st.button("🚀 Uruchom Walk-Forward Replay 2026 teraz"):
@@ -563,7 +600,39 @@ with tab_timeline:
 
     # Sekcja 1: Wykres trajektorii kapitału w czasie (Equity Curves)
     st.markdown("### 📈 Trajektoria Kapitału w Czasie (Equity Journey)")
-    if timeline_records:
+    if is_recent_picks_mode and timeline_records:
+        fig_equity = go.Figure()
+        fig_equity.add_trace(go.Scatter(
+            x=[f"#{i+1} ({r['date']})" for i, r in enumerate(timeline_records)],
+            y=[r["running_balance"] for r in timeline_records],
+            mode="lines+markers",
+            name="Stan Portfela (Kupon po kuponie)",
+            line=dict(color="#10b981", width=3),
+            marker=dict(
+                size=10,
+                color=["#10b981" if r["pnl"] > 0 else ("#ef4444" if r["pnl"] < 0 else "#f59e0b") for r in timeline_records],
+                line=dict(width=1.5, color="white")
+            ),
+            customdata=[(r["match"], r["pnl"]) for r in timeline_records],
+            hovertemplate="Kupon: %{x}<br>Mecz: <b>%{customdata[0]}</b><br>PnL zakładu: <b>%{customdata[1]:+.2f} PLN</b><br>Stan portfela: <b>%{y:.2f} PLN</b><extra></extra>"
+        ))
+        fig_equity.add_hline(
+            y=initial_budget,
+            line_dash="dash",
+            line_color="rgba(255, 255, 255, 0.4)",
+            annotation_text=f"Kapitał początkowy ({initial_budget:.2f} PLN)",
+            annotation_position="bottom right"
+        )
+        fig_equity.update_layout(
+            height=420,
+            template="plotly_dark",
+            margin=dict(l=20, r=20, t=30, b=20),
+            hovermode="x unified",
+            xaxis_title="Kolejne Zakłady Wstecz (Chronologicznie)",
+            yaxis_title="Stan Portfela (PLN)"
+        )
+        st.plotly_chart(fig_equity, use_container_width=True)
+    elif timeline_records and not is_recent_picks_mode:
         df_tl = pd.DataFrame(timeline_records)
         df_tl["date"] = pd.to_datetime(df_tl["date"])
         df_tl = df_tl.sort_values("date")
