@@ -484,6 +484,7 @@ with tab_timeline:
             max_ev=max_ev_input,
             min_odds=odds_range[0],
             max_odds=odds_range[1],
+            max_odds_1x=float(config.get("strategy", {}).get("max_odds_1x", 1.25)),
             force_refresh=force_calc
         )
         bets_pool = recent_data.get("bets", [])

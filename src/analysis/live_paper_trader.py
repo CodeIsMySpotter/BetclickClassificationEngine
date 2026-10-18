@@ -343,7 +343,12 @@ def run_ytd_historical_replay(num_matchdays: int = 15, budget_per_day: float = 5
         config = yaml.safe_load(f)
 
     optimizer = DayReturnOptimizer(
-        min_probability=0.70, min_ev=0.04, max_ev=0.18, min_odds=1.15, max_odds=1.60
+        min_probability=float(config.get("strategy", {}).get("min_model_prob", 0.78)),
+        min_ev=0.04,
+        max_ev=0.18,
+        min_odds=1.15,
+        max_odds=1.60,
+        max_odds_1x=float(config.get("strategy", {}).get("max_odds_1x", 1.25))
     )
 
     results_by_mode = {
@@ -482,11 +487,12 @@ def fetch_recent_engine_picks(
     strategy_mode: str = "safest_pewniaki",
     daily_budget: float = 50.0,
     slate_size: int = 5,
-    min_prob: float = 0.70,
+    min_prob: float = 0.78,
     min_ev: float = 0.04,
     max_ev: float = 0.18,
     min_odds: float = 1.15,
     max_odds: float = 1.60,
+    max_odds_1x: float = 1.25,
     force_refresh: bool = False
 ) -> Dict[str, Any]:
     """Gathers the exact last N engine bets by scanning completed matches backwards in time."""
@@ -516,7 +522,8 @@ def fetch_recent_engine_picks(
         min_ev=min_ev,
         max_ev=max_ev,
         min_odds=min_odds,
-        max_odds=max_odds
+        max_odds=max_odds,
+        max_odds_1x=max_odds_1x
     )
     engine = FootballInferenceEngine(config=config)
 

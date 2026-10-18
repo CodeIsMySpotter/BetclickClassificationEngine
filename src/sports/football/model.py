@@ -47,9 +47,10 @@ class FootballInferenceEngine(BaseSportInferenceEngine):
         strat = self.config.get("strategy", {})
         self.min_ev = strat.get("min_ev", 0.04)
         self.max_ev = strat.get("max_ev", 0.18)      # Asymmetric Value Trap ceiling
-        self.min_prob = strat.get("min_model_prob", 0.70)
+        self.min_prob = strat.get("min_model_prob", 0.78)  # Domyślnie 78% (odcina wpadki z przedziału 50-75%)
         self.min_odds = strat.get("min_odds", 1.15)
         self.max_odds = strat.get("max_odds", 1.60)  # Zawężenie górnego pułapu (odcina -15% strat powyżej 1.60)
+        self.max_odds_1x = strat.get("max_odds_1x", 1.25)  # Pułapka Fake Favorite: 1X tylko do kursu 1.25!
         self.min_total_xg = strat.get("min_total_xg", 1.90)  # Filtr meczów o niskim xG
         self.early_season_penalty = strat.get("early_season_penalty", True)
         self.prefer_dnb = strat.get("prefer_dnb_on_tight_margin", True)
@@ -170,9 +171,10 @@ class FootballInferenceEngine(BaseSportInferenceEngine):
         if odd_1x > 1.0:
             ev_1x = (prob_1x * odd_1x) - 1.0
             fair_1x = 1.0 / prob_1x if prob_1x > 0 else 99.0
-            is_trap = (ev_1x > self.max_ev) or is_mud_match or (odd_1x > self.max_odds) or (prob_1x < min_required_prob)
+            is_fake_fav = odd_1x > self.max_odds_1x
+            is_trap = (ev_1x > self.max_ev) or is_mud_match or is_fake_fav or (prob_1x < min_required_prob)
             score = calc_confidence(prob_1x, ev_1x, odd_1x)
-            mud_note = f" [Niski xG meczu: {total_exp_xg:.2f}]" if is_mud_match else ""
+            trap_note = " [Fake Fav: Kurs 1X > 1.25]" if is_fake_fav else (f" [Niski xG meczu: {total_exp_xg:.2f}]" if is_mud_match else "")
             candidates.append(BetOpportunity(
                 event_id=event.event_id,
                 sport=SportType.FOOTBALL,
@@ -186,7 +188,7 @@ class FootballInferenceEngine(BaseSportInferenceEngine):
                 expected_value=ev_1x,
                 confidence_score=score,
                 is_value_trap=is_trap,
-                rationale=f"Elo Diff: {elo_diff:+.1f}, xG Diff: {xg_diff:+.2f}, szansa 1X: {prob_1x*100:.1f}%{mud_note}"
+                rationale=f"Elo Diff: {elo_diff:+.1f}, xG Diff: {xg_diff:+.2f}, szansa 1X: {prob_1x*100:.1f}%{trap_note}"
             ))
 
         # 2. Rynek DNB (Remis = Zwrot)

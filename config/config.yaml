@@ -67,12 +67,14 @@ strategy:
   # Widełki kursowe dla profilu inwestycyjnego (stabilne kursy np. 1.15 - 1.60)
   min_odds: 1.15
   max_odds: 1.60
-  # Minimalne prawdopodobieństwo wygranej modelu (70% - gwarantuje wysoki Win Rate i ochronę kapitału)
-  min_model_prob: 0.70
+  # Minimalne prawdopodobieństwo wygranej modelu (78% - wycina ujemny ROI z przedziału 50-75%)
+  min_model_prob: 0.78
+  # Pułapka 'Fake Favorite': rynek 1X dopuszczony WYŁĄCZNIE do kursu 1.25 (wyżej tylko DNB lub Czysta 1)
+  max_odds_1x: 1.25
   # Reguły ochronne (Anti-Variance & Anti-Trap):
   # 1. Filtr meczów o niskim xG (odrzuca mecze z sumą oczekiwanych goli < 1.90, np. Getafe, Osasuna)
   min_total_xg: 1.90
-  # 2. Filtr wczesnego sezonu (w sierpniu/wrześniu podnosi próg szansy do 74% z powodu zaszumionych danych)
+  # 2. Filtr wczesnego sezonu (w sierpniu/wrześniu podnosi próg szansy do 80% z powodu zaszumionych danych)
   early_season_penalty: true
   # 3. Preferencja DNB nad 1X przy ciasnych meczach (zwrot stawki przy remisie chroni kapitał)
   prefer_dnb_on_tight_margin: true

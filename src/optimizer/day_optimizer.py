@@ -17,11 +17,12 @@ class DayReturnOptimizer(BaseSlateOptimizer):
 
     def __init__(
         self,
-        min_probability: float = 0.70,
+        min_probability: float = 0.78, # Podniesiony próg pewności (wycina ujemny ROI z przedziału 50-75%)
         min_ev: float = 0.04,
         max_ev: float = 0.18,          # Asymmetric Value Trap Ceiling
         min_odds: float = 1.15,
         max_odds: float = 1.60,        # Zawężone widełki kursowe (odcina -15% strat powyżej 1.60)
+        max_odds_1x: float = 1.25,     # Pułapka Fake Favorite: 1X tylko do kursu 1.25!
         min_bet_stake_pln: float = 2.00,
     ):
         self.min_probability = min_probability
@@ -29,6 +30,7 @@ class DayReturnOptimizer(BaseSlateOptimizer):
         self.max_ev = max_ev
         self.min_odds = min_odds
         self.max_odds = max_odds
+        self.max_odds_1x = max_odds_1x
         self.min_bet_stake_pln = min_bet_stake_pln
 
     def filter_actionable(
@@ -48,10 +50,14 @@ class DayReturnOptimizer(BaseSlateOptimizer):
             # Trap ceiling check: avoid bookmaker asymmetry anomalies
             if opp.is_value_trap or opp.expected_value > self.max_ev:
                 continue
+
+            # Pułapka Fake Favorite: 1X tylko do kursu 1.25
+            if "1X" in opp.market_name and opp.odds > self.max_odds_1x:
+                continue
             
             # Early season uncertainty check (August / September)
             is_early = opp.event_date.month in [8, 9] if hasattr(opp.event_date, "month") else False
-            req_prob = max(self.min_probability, 0.74) if is_early else self.min_probability
+            req_prob = max(self.min_probability, 0.80) if is_early else self.min_probability
 
             # Core quantitative bounds
             if (
