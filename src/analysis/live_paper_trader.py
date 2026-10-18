@@ -347,10 +347,12 @@ def run_ytd_historical_replay(num_matchdays: int = 15, budget_per_day: float = 5
     )
 
     results_by_mode = {
-        "safest_pewniaki": {"name": "PEWNIAKI (Safest)", "pnls": [], "wins": 0, "losses": 0, "refunds": 0, "stakes": 0.0},
-        "max_return": {"name": "ZWROT (Max EV)", "pnls": [], "wins": 0, "losses": 0, "refunds": 0, "stakes": 0.0},
-        "balanced_sharpe": {"name": "SHARPE (Balanced)", "pnls": [], "wins": 0, "losses": 0, "refunds": 0, "stakes": 0.0}
+        "safest_pewniaki": {"name": "PEWNIAKI (Safest)", "pnls": [], "wins": 0, "losses": 0, "refunds": 0, "stakes": 0.0, "bets": [], "cum_pnl": 0.0},
+        "max_return": {"name": "ZWROT (Max EV)", "pnls": [], "wins": 0, "losses": 0, "refunds": 0, "stakes": 0.0, "bets": [], "cum_pnl": 0.0},
+        "balanced_sharpe": {"name": "SHARPE (Balanced)", "pnls": [], "wins": 0, "losses": 0, "refunds": 0, "stakes": 0.0, "bets": [], "cum_pnl": 0.0}
     }
+
+    timeline_points = []
 
     # Uruchamiamy walk-forward
     engine = FootballInferenceEngine(config=config)
@@ -362,15 +364,17 @@ def run_ytd_historical_replay(num_matchdays: int = 15, budget_per_day: float = 5
 
         # Tworzymy obiekty MatchEvent dla tego dnia
         events = []
+        scores_by_event = {}
         for idx, row in df_day.iterrows():
             oh, ox, oa = float(row["B365H"]), float(row["B365D"]), float(row["B365A"])
             o_1x = round(1.0 / ((1.0/oh) + (1.0/ox)), 2)
             o_dnb = round(oh * (1.0 - (1.0/ox)), 2) if ox > 1.0 else oh
             odds = {"1": oh, "X": ox, "2": oa, "1X": o_1x, "DNB": o_dnb}
             
+            ev_id = f"hist_{idx}"
             from src.core.domain import MatchEvent, SportType
             ev = MatchEvent(
-                event_id=f"hist_{idx}",
+                event_id=ev_id,
                 sport=SportType.FOOTBALL,
                 league_name="Liga",
                 home_competitor=row["home_team"],
@@ -380,10 +384,17 @@ def run_ytd_historical_replay(num_matchdays: int = 15, budget_per_day: float = 5
                 metadata={"ftr": row["FTR"]}
             )
             events.append(ev)
+            scores_by_event[ev_id] = {
+                "fthg": int(row["FTHG"]),
+                "ftag": int(row["FTAG"]),
+                "ftr": str(row["FTR"])
+            }
 
         opps = engine.evaluate_all(events)
         if not opps:
             continue
+
+        day_record = {"date": str(m_date), "matches_count": len(events)}
 
         # Ewaluacja dla 3 trybów
         for mode in ["safest_pewniaki", "max_return", "balanced_sharpe"]:
@@ -392,31 +403,78 @@ def run_ytd_historical_replay(num_matchdays: int = 15, budget_per_day: float = 5
             )
             day_pnl = 0.0
             for b in slate.selections:
-                # Szukamy ftr
                 ev_match = next((e for e in events if e.event_id == b.event_id), None)
                 if ev_match:
-                    ftr = ev_match.metadata["ftr"]
-                    status, pnl = resolve_bet_outcome(b.market_name, b.odds, b.recommended_stake_pln, ftr)
+                    score_info = scores_by_event.get(b.event_id, {"fthg": 0, "ftag": 0, "ftr": "H"})
+                    status, pnl = resolve_bet_outcome(b.market_name, b.odds, b.recommended_stake_pln, score_info["ftr"])
                     day_pnl += pnl
                     results_by_mode[mode]["stakes"] += b.recommended_stake_pln
                     if status == "WON": results_by_mode[mode]["wins"] += 1
                     elif status == "LOST": results_by_mode[mode]["losses"] += 1
                     else: results_by_mode[mode]["refunds"] += 1
 
+                    results_by_mode[mode]["bets"].append({
+                        "date": str(m_date),
+                        "match": b.match_display,
+                        "league": b.league_name,
+                        "market": b.market_name,
+                        "odds": b.odds,
+                        "fair_odds": b.fair_odds,
+                        "model_prob": round(b.model_probability * 100, 1),
+                        "ev": round(b.expected_value * 100, 1),
+                        "stake_pln": round(b.recommended_stake_pln, 2),
+                        "status": status,
+                        "score": f"{score_info['fthg']}:{score_info['ftag']}",
+                        "pnl": round(pnl, 2),
+                        "strategy": mode,
+                        "strategy_name": results_by_mode[mode]["name"],
+                        "rationale": b.rationale
+                    })
+
             results_by_mode[mode]["pnls"].append(day_pnl)
+            results_by_mode[mode]["cum_pnl"] = round(results_by_mode[mode]["cum_pnl"] + day_pnl, 2)
+            day_record[f"{mode}_day_pnl"] = round(day_pnl, 2)
+            day_record[f"{mode}_cum_pnl"] = results_by_mode[mode]["cum_pnl"]
+            day_record[f"{mode}_balance"] = round(budget_per_day + results_by_mode[mode]["cum_pnl"], 2)
+
+        timeline_points.append(day_record)
+
+    # Zapis do artifacts/replay_2026_timeline.json
+    replay_artifact = {
+        "generated_at": datetime.datetime.now().isoformat(),
+        "num_matchdays": len(timeline_points),
+        "budget_per_day": budget_per_day,
+        "timeline": timeline_points,
+        "strategies": {
+            mode: {
+                "name": data["name"],
+                "total_bets": data["wins"] + data["losses"] + data["refunds"],
+                "won": data["wins"],
+                "lost": data["losses"],
+                "refunded": data["refunds"],
+                "win_rate_pct": round((data["wins"] / (data["wins"] + data["losses"] + data["refunds"]) * 100.0), 1) if (data["wins"] + data["losses"] + data["refunds"]) > 0 else 0.0,
+                "total_stake": round(data["stakes"], 2),
+                "net_pnl": round(sum(data["pnls"]), 2),
+                "roi_pct": round((sum(data["pnls"]) / data["stakes"] * 100.0), 2) if data["stakes"] > 0 else 0.0,
+                "bets": data["bets"]
+            }
+            for mode, data in results_by_mode.items()
+        }
+    }
+
+    replay_file = ARTIFACTS_DIR / "replay_2026_timeline.json"
+    with open(replay_file, "w", encoding="utf-8") as f:
+        json.dump(replay_artifact, f, indent=2, ensure_ascii=False)
 
     # Podsumowanie porównawcze
     print(f"{'STRATEGIA':<28} | {'ZAKŁADY':<8} | {'WIN RATE':<10} | {'OBRÓT (PLN)':<12} | {'CZYSTY PnL':<14} | {'ROI (%)':<8}")
     print("-" * 105)
-    for mode, data in results_by_mode.items():
-        tot_bets = data["wins"] + data["losses"] + data["refunds"]
-        wr = (data["wins"] / tot_bets * 100.0) if tot_bets > 0 else 0.0
-        tot_pnl = sum(data["pnls"])
-        tot_stake = data["stakes"]
-        roi = (tot_pnl / tot_stake * 100.0) if tot_stake > 0 else 0.0
-        print(f"{data['name']:<28} | {tot_bets:<8} | {wr:<9.1f}% | {tot_stake:<12.2f} | {tot_pnl:+12.2f} PLN | {roi:+6.2f}%")
+    for mode, data in replay_artifact["strategies"].items():
+        print(f"{data['name']:<28} | {data['total_bets']:<8} | {data['win_rate_pct']:<9.1f}% | {data['total_stake']:<12.2f} | {data['net_pnl']:+12.2f} PLN | {data['roi_pct']:+6.2f}%")
 
+    print(f"\n[OK] Zapisano szczegolowe dane osi czasu do: {replay_file}")
     print("=" * 105 + "\n")
+    return replay_artifact
 
 
 if __name__ == "__main__":

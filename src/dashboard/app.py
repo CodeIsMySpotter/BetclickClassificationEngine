@@ -90,6 +90,67 @@ st.markdown(
         padding: 4px 8px;
         border-radius: 6px;
     }
+    .timeline-card {
+        background: rgba(255, 255, 255, 0.035);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 12px;
+        backdrop-filter: blur(8px);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .timeline-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+    .card-won {
+        border-left: 5px solid #10b981 !important;
+        background: linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+    }
+    .card-lost {
+        border-left: 5px solid #ef4444 !important;
+        background: linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+    }
+    .card-refund {
+        border-left: 5px solid #f59e0b !important;
+        background: linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+    }
+    .card-pending {
+        border-left: 5px solid #6366f1 !important;
+        background: linear-gradient(90deg, rgba(99, 102, 241, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+    }
+    .status-pill {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 9999px;
+        font-size: 0.85em;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+    }
+    .pill-won { background: #064e3b; color: #34d399; border: 1px solid #059669; }
+    .pill-lost { background: #7f1d1d; color: #f87171; border: 1px solid #dc2626; }
+    .pill-refund { background: #78350f; color: #fbbf24; border: 1px solid #d97706; }
+    .pill-pending { background: #312e81; color: #a5b4fc; border: 1px solid #4f46e5; }
+    .strat-pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 0.8em;
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.1);
+        color: #e5e7eb;
+        margin-right: 6px;
+    }
+    .date-header {
+        background: rgba(255, 255, 255, 0.05);
+        border-left: 3px solid #6366f1;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-weight: 700;
+        color: #e0e7ff;
+        margin-top: 18px;
+        margin-bottom: 10px;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -228,8 +289,9 @@ with col4:
 st.markdown("---")
 
 # Zakładki
-tab_day, tab_live, tab_bets, tab_parlays, tab_all, tab_visuals = st.tabs([
+tab_day, tab_timeline, tab_live, tab_bets, tab_parlays, tab_all, tab_visuals = st.tabs([
     "📅 Dzienny Optymalizator (Day Return Optimizer)",
+    "⏱️ Wizualizacja Linii Czasu & Zakładów (Timeline & Bets)",
     "🧪 Test na Żywo (Live Paper Trading)",
     "🎯 Wszystkie Rekomendacje (Single)",
     "⚡ Duble Inwestycyjne (2-Leg Parlay)",
@@ -347,6 +409,365 @@ with tab_day:
                             f"⚽ **Mecz 2:** {p['leg2']['match']} -> **{p['leg2']['market']}** ({p['leg2']['odds']:.2f})\n\n"
                             f"💵 **Stawka:** **{p['stake_pln']:.2f} PLN** -> Do wygrania: **{p['potential_return_pln']:.2f} PLN**"
                         )
+
+with tab_timeline:
+    st.subheader("⏱️ Interaktywna Wizualizacja Linii Czasu & Zakładów (Timeline & Equity Journey)")
+    st.caption("Przeglądaj chronologiczny przebieg typów, trajektorię kapitału w czasie i porównuj 3 strategie (Pewniaki, Zwrot, Sharpe).")
+
+    REPLAY_TIMELINE_JSON = ARTIFACTS_DIR / "replay_2026_timeline.json"
+    LEDGER_JSON = ARTIFACTS_DIR / "paper_trading_ledger.json"
+
+    # Kontrolki wyboru źródła i filtrów
+    tl_col1, tl_col2, tl_col3, tl_col4 = st.columns([3, 2, 2, 3])
+    with tl_col1:
+        data_source = st.radio(
+            "Źródło danych osi czasu:",
+            options=["⏪ Replay 2026 (Walk-Forward na 20 kolejkach)", "🟢 Kampania Na Żywo (Forward Paper Trading)"],
+            index=0,
+            horizontal=False
+        )
+    with tl_col2:
+        strat_choice = st.selectbox(
+            "Strategia:",
+            options=["Wszystkie strategie", "🛡️ PEWNIAKI (Safest)", "💰 ZWROT (Max EV)", "⚖️ SHARPE (Balanced)"],
+            index=0
+        )
+    with tl_col3:
+        status_choice = st.selectbox(
+            "Status wyniku:",
+            options=["Wszystkie", "🟢 Tylko Wygrane", "🔴 Tylko Przegrane", "🟡 Tylko Zwroty", "⏳ Tylko Oczekujące"],
+            index=0
+        )
+    with tl_col4:
+        search_kw = st.text_input("🔍 Filtruj po meczu / drużynie:", placeholder="np. Real, Arsenal, Juventus...")
+
+    # Pobieranie danych
+    timeline_records = []
+    bets_pool = []
+    initial_budget = float(bankroll)
+
+    if data_source.startswith("⏪"):
+        if not REPLAY_TIMELINE_JSON.exists():
+            st.warning("Brak zapisanego pliku osi czasu Replay 2026. Kliknij poniższy przycisk, aby go wygenerować.")
+            if st.button("🚀 Uruchom Walk-Forward Replay 2026 teraz"):
+                with st.spinner("Symulacja 20 kolejek z 2026 roku..."):
+                    from src.analysis.live_paper_trader import run_ytd_historical_replay
+                    run_ytd_historical_replay(num_matchdays=20, budget_per_day=initial_budget)
+                st.success("Wygenerowano dane osi czasu!")
+                st.rerun()
+        else:
+            with open(REPLAY_TIMELINE_JSON, "r", encoding="utf-8") as f:
+                rep_data = json.load(f)
+            timeline_records = rep_data.get("timeline", [])
+            initial_budget = rep_data.get("budget_per_day", 50.0)
+
+            # Pobieramy zakłady ze strategii
+            for s_key, s_val in rep_data.get("strategies", {}).items():
+                for b in s_val.get("bets", []):
+                    b_copy = dict(b)
+                    b_copy["strategy_key"] = s_key
+                    bets_pool.append(b_copy)
+
+    else:  # Live Paper Trading
+        if not LEDGER_JSON.exists():
+            st.info("Brak aktywnych kampanii na żywo. Przejdź do zakładki '🧪 Test na Żywo' i kliknij 'Zarejestruj nową kampanię'.")
+        else:
+            with open(LEDGER_JSON, "r", encoding="utf-8") as f:
+                led_data = json.load(f)
+            campaigns = led_data.get("campaigns", [])
+            if not campaigns:
+                st.info("Brak zarejestrowanych kampanii na żywo.")
+            else:
+                for camp in campaigns:
+                    c_date = camp.get("target_date", "2026-10-18")
+                    for s_key, s_val in camp.get("strategies", {}).items():
+                        for b in s_val.get("bets", []):
+                            bets_pool.append({
+                                "date": b.get("date", c_date),
+                                "match": b.get("match", ""),
+                                "league": b.get("league", "Liga"),
+                                "market": b.get("market", ""),
+                                "odds": b.get("odds", 1.0),
+                                "fair_odds": b.get("odds", 1.0) / 1.1,
+                                "model_prob": round(b.get("model_prob", 0.8) * 100, 1),
+                                "ev": round(b.get("ev", 0.1) * 100, 1),
+                                "stake_pln": b.get("stake_pln", 5.0),
+                                "status": b.get("status", "PENDING"),
+                                "score": f"{b['result']['fthg']}:{b['result']['ftag']}" if b.get("result") else "Oczekuje",
+                                "pnl": b.get("pnl", 0.0),
+                                "strategy": s_key,
+                                "strategy_name": s_val.get("name", s_key),
+                                "rationale": f"Pewność: {round(b.get('model_prob', 0.8)*100, 1)}% | EV: {round(b.get('ev', 0.1)*100, 1)}%"
+                            })
+
+    # Filtrowanie zakładów
+    filtered_bets = []
+    strat_key_map = {
+        "🛡️ PEWNIAKI (Safest)": "safest_pewniaki",
+        "💰 ZWROT (Max EV)": "max_return",
+        "⚖️ SHARPE (Balanced)": "balanced_sharpe"
+    }
+    target_strat_key = strat_key_map.get(strat_choice)
+
+    status_key_map = {
+        "🟢 Tylko Wygrane": "WON",
+        "🔴 Tylko Przegrane": "LOST",
+        "🟡 Tylko Zwroty": "REFUNDED",
+        "⏳ Tylko Oczekujące": "PENDING"
+    }
+    target_status = status_key_map.get(status_choice)
+
+    for b in bets_pool:
+        if target_strat_key and b.get("strategy") != target_strat_key:
+            continue
+        if target_status and b.get("status") != target_status:
+            continue
+        if search_kw:
+            kw = search_kw.lower()
+            if kw not in b.get("match", "").lower() and kw not in b.get("league", "").lower() and kw not in b.get("market", "").lower():
+                continue
+        filtered_bets.append(b)
+
+    # Sortowanie chronologiczne
+    filtered_bets = sorted(filtered_bets, key=lambda x: (x.get("date", ""), x.get("match", "")))
+
+    # Podsumowanie KPI dla wyfiltrowanej próby
+    tot_cnt = len(filtered_bets)
+    won_cnt = sum(1 for b in filtered_bets if b.get("status") == "WON")
+    lost_cnt = sum(1 for b in filtered_bets if b.get("status") == "LOST")
+    ref_cnt = sum(1 for b in filtered_bets if b.get("status") == "REFUNDED")
+    pend_cnt = sum(1 for b in filtered_bets if b.get("status") == "PENDING")
+
+    resolved_cnt = won_cnt + lost_cnt + ref_cnt
+    win_rate = (won_cnt / (won_cnt + lost_cnt) * 100.0) if (won_cnt + lost_cnt) > 0 else 0.0
+    tot_turnover = sum(b.get("stake_pln", 0.0) for b in filtered_bets)
+    tot_pnl = sum((b.get("pnl") or 0.0) for b in filtered_bets)
+    realized_roi = (tot_pnl / tot_turnover * 100.0) if tot_turnover > 0 else 0.0
+
+    kpi1, kpi2, kpi3, kpi4, kpi5 = st.columns(5)
+    with kpi1:
+        st.metric("Liczba kuponów", f"{tot_cnt}", f"Rozliczone: {resolved_cnt}")
+    with kpi2:
+        st.metric("Skuteczność (Win Rate)", f"{win_rate:.1f}%", f"{won_cnt}W - {lost_cnt}L - {ref_cnt}R")
+    with kpi3:
+        pnl_color = "normal" if tot_pnl >= 0 else "inverse"
+        st.metric("Czysty PnL (Zysk/Strata)", f"{tot_pnl:+.2f} PLN", f"ROI: {realized_roi:+.1f}%")
+    with kpi4:
+        st.metric("Całkowity Obrót", f"{tot_turnover:.2f} PLN", f"Śr. stawka: {(tot_turnover/tot_cnt):.2f} PLN" if tot_cnt > 0 else "0 PLN")
+    with kpi5:
+        avg_odds = (sum(b.get("odds", 1.0) for b in filtered_bets) / tot_cnt) if tot_cnt > 0 else 0.0
+        avg_prob = (sum(b.get("model_prob", 0.0) for b in filtered_bets) / tot_cnt) if tot_cnt > 0 else 0.0
+        st.metric("Średni Kurs / Szansa", f"{avg_odds:.2f} @ {avg_prob:.1f}%")
+
+    st.markdown("---")
+
+    # Sekcja 1: Wykres trajektorii kapitału w czasie (Equity Curves)
+    st.markdown("### 📈 Trajektoria Kapitału w Czasie (Equity Journey)")
+    if timeline_records:
+        df_tl = pd.DataFrame(timeline_records)
+        df_tl["date"] = pd.to_datetime(df_tl["date"])
+        df_tl = df_tl.sort_values("date")
+
+        fig_equity = go.Figure()
+
+        # Pewniaki
+        fig_equity.add_trace(go.Scatter(
+            x=df_tl["date"],
+            y=df_tl["safest_pewniaki_balance"],
+            mode="lines+markers",
+            name="🛡️ Pewniaki (Safest)",
+            line=dict(color="#10b981", width=3),
+            marker=dict(size=7, color="#10b981"),
+            hovertemplate="<b>Pewniaki</b><br>Data: %{x|%Y-%m-%d}<br>Kapitał: <b>%{y:.2f} PLN</b><extra></extra>"
+        ))
+
+        # Zwrot
+        fig_equity.add_trace(go.Scatter(
+            x=df_tl["date"],
+            y=df_tl["max_return_balance"],
+            mode="lines+markers",
+            name="💰 Zwrot (Max EV)",
+            line=dict(color="#f59e0b", width=3),
+            marker=dict(size=7, color="#f59e0b"),
+            hovertemplate="<b>Zwrot (Max EV)</b><br>Data: %{x|%Y-%m-%d}<br>Kapitał: <b>%{y:.2f} PLN</b><extra></extra>"
+        ))
+
+        # Sharpe
+        fig_equity.add_trace(go.Scatter(
+            x=df_tl["date"],
+            y=df_tl["balanced_sharpe_balance"],
+            mode="lines+markers",
+            name="⚖️ Sharpe (Balanced)",
+            line=dict(color="#06b6d4", width=3, dash="dot"),
+            marker=dict(size=7, color="#06b6d4"),
+            hovertemplate="<b>Sharpe</b><br>Data: %{x|%Y-%m-%d}<br>Kapitał: <b>%{y:.2f} PLN</b><extra></extra>"
+        ))
+
+        # Linia bazowa (początkowy budżet)
+        fig_equity.add_hline(
+            y=initial_budget,
+            line_dash="dash",
+            line_color="rgba(255, 255, 255, 0.4)",
+            annotation_text=f"Kapitał początkowy ({initial_budget:.2f} PLN)",
+            annotation_position="bottom right"
+        )
+
+        fig_equity.update_layout(
+            height=420,
+            template="plotly_dark",
+            margin=dict(l=20, r=20, t=30, b=20),
+            hovermode="x unified",
+            xaxis_title="Oś Czasu (Data Kolejki)",
+            yaxis_title="Stan Portfela (PLN)",
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        )
+        st.plotly_chart(fig_equity, use_container_width=True)
+    else:
+        st.info("Brak wystarczającej liczby punktów czasowych do wygenerowania krzywej kapitału dla tego źródła.")
+
+    # Sekcja 2: Interaktywna Oś Czasu Zakładów (Scatter Timeline)
+    st.markdown("### 🎯 Wizualna Oś Czasu Wszystkich Zawartych Typów")
+    st.caption("Każdy punkt na wykresie reprezentuje postawiony zakład. Rozmiar punktu odpowiada stawce w PLN, a kolor stanowi o wyniku.")
+
+    if filtered_bets:
+        df_scatter = pd.DataFrame(filtered_bets)
+        color_map = {
+            "WON": "#10b981",
+            "LOST": "#ef4444",
+            "REFUNDED": "#f59e0b",
+            "PENDING": "#6366f1"
+        }
+
+        fig_bets = go.Figure()
+
+        for status_code, col in color_map.items():
+            sub = df_scatter[df_scatter["status"] == status_code]
+            if sub.empty:
+                continue
+
+            custom_data = list(zip(
+                sub["match"],
+                sub["market"],
+                sub["model_prob"],
+                sub["ev"],
+                sub["score"],
+                sub["status"],
+                sub["stake_pln"],
+                sub["pnl"].fillna(0.0),
+                sub["strategy_name"] if "strategy_name" in sub.columns else sub["strategy"]
+            ))
+
+            fig_bets.add_trace(go.Scatter(
+                x=sub["date"],
+                y=sub["odds"],
+                mode="markers",
+                name=f"{status_code} ({len(sub)})",
+                marker=dict(
+                    color=col,
+                    size=sub["stake_pln"].apply(lambda s: max(10, min(26, s * 1.8))),
+                    line=dict(width=1.5, color="white"),
+                    opacity=0.85
+                ),
+                customdata=custom_data,
+                hovertemplate=(
+                    "<b>%{customdata[0]}</b> [%{customdata[8]}]<br>"
+                    "📅 Data: %{x} | Wynik meczu: <b>%{customdata[4]}</b><br>"
+                    "🎯 Typ: <b>%{customdata[1]}</b> @ <b>%{y:.2f}</b><br>"
+                    "⚡ Szansa modelu: %{customdata[2]}% | EV: %{customdata[3]}%<br>"
+                    "💵 Stawka: %{customdata[6]:.2f} PLN | Wynik: <b>%{customdata[7]:+.2f} PLN</b> (%{customdata[5]})"
+                    "<extra></extra>"
+                )
+            ))
+
+        fig_bets.update_layout(
+            height=380,
+            template="plotly_dark",
+            margin=dict(l=20, r=20, t=30, b=20),
+            xaxis_title="Data Meczu",
+            yaxis_title="Kurs Zakładu (Odds)",
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        )
+        st.plotly_chart(fig_bets, use_container_width=True)
+
+    # Sekcja 3: Chronologiczny strumień kart zakładów
+    st.markdown("### 📋 Chronologiczny Strumień Zakładów (Bet Cards Feed)")
+
+    if not filtered_bets:
+        st.warning("Brak zakładów spełniających wybrane kryteria filtrów.")
+    else:
+        # Grupujemy zakłady po dacie
+        dates_order = sorted(list(set(b["date"] for b in filtered_bets)), reverse=True)
+        
+        for d in dates_order:
+            day_bets = [b for b in filtered_bets if b["date"] == d]
+            day_pnl = sum((b.get("pnl") or 0.0) for b in day_bets)
+            day_won = sum(1 for b in day_bets if b["status"] == "WON")
+            day_tot = len(day_bets)
+            
+            pnl_badge_color = "#10b981" if day_pnl >= 0 else "#ef4444"
+            st.markdown(
+                f"<div class='date-header'>"
+                f"📅 <b>{d}</b> &nbsp;|&nbsp; Zakładów: <b>{day_tot}</b> (Trafione: {day_won}/{day_tot}) &nbsp;|&nbsp; "
+                f"Wynik dnia: <span style='color:{pnl_badge_color}; font-weight:800;'>{day_pnl:+.2f} PLN</span>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+
+            for b in day_bets:
+                status = b.get("status", "PENDING")
+                if status == "WON":
+                    card_class = "card-won"
+                    pill_html = f"<span class='status-pill pill-won'>🟢 WYGRANY ({b.get('score', '')})</span>"
+                    res_pnl_html = f"<span style='color:#10b981; font-weight:bold; font-size:1.15em;'>{b.get('pnl', 0.0):+.2f} PLN</span>"
+                elif status == "LOST":
+                    card_class = "card-lost"
+                    pill_html = f"<span class='status-pill pill-lost'>🔴 PRZEGRANY ({b.get('score', '')})</span>"
+                    res_pnl_html = f"<span style='color:#ef4444; font-weight:bold; font-size:1.15em;'>{b.get('pnl', 0.0):+.2f} PLN</span>"
+                elif status == "REFUNDED":
+                    card_class = "card-refund"
+                    pill_html = f"<span class='status-pill pill-refund'>🟡 ZWROT ({b.get('score', '')})</span>"
+                    res_pnl_html = f"<span style='color:#f59e0b; font-weight:bold; font-size:1.15em;'>0.00 PLN</span>"
+                else:
+                    card_class = "card-pending"
+                    pill_html = f"<span class='status-pill pill-pending'>⏳ OCZEKUJE</span>"
+                    res_pnl_html = f"<span style='color:#a5b4fc; font-weight:bold;'>W toku</span>"
+
+                strat_name = b.get("strategy_name") or b.get("strategy", "Pewniaki")
+                fair_odds_txt = f"{b.get('fair_odds', 1.0):.2f}" if b.get('fair_odds') else "—"
+                
+                with st.container():
+                    st.markdown(
+                        f"""
+                        <div class='timeline-card {card_class}'>
+                            <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;'>
+                                <div>
+                                    <span class='strat-pill'>{strat_name}</span>
+                                    <span style='color:#9ca3af; font-size:0.85em;'>[{b.get('league', 'Liga')}]</span>
+                                    <span style='font-weight:700; font-size:1.05em; margin-left:6px;'>{b.get('match')}</span>
+                                </div>
+                                <div>
+                                    {pill_html}
+                                </div>
+                            </div>
+                            <div style='display:flex; justify-content:space-between; align-items:center;'>
+                                <div>
+                                    🎯 Typ: <b style='color:#10b981; font-size:1.05em;'>{b.get('market')}</b> 
+                                    &nbsp;@&nbsp; <b>{b.get('odds', 1.0):.2f}</b> 
+                                    <span style='color:#6b7280; font-size:0.85em;'>(Fair: {fair_odds_txt})</span>
+                                    <div style='color:#9ca3af; font-size:0.82em; margin-top:4px;'>
+                                        💡 {b.get('rationale', '')}
+                                    </div>
+                                </div>
+                                <div style='text-align:right;'>
+                                    <span style='font-size:0.85em; color:#9ca3af;'>Szansa: <b>{b.get('model_prob', 0)}%</b> | EV: <b>{b.get('ev', 0):+}%</b></span><br>
+                                    Stawka: <b>{b.get('stake_pln', 0.0):.2f} PLN</b> &nbsp;➔&nbsp; PnL: {res_pnl_html}
+                                </div>
+                            </div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
 with tab_live:
     st.subheader("🧪 Test na Żywym Organizmie (Out-of-Sample Live Audit)")
     st.caption("Rejestruj prognozy na nadchodzące mecze dla 3 podejść (Pewniaki, Zwrot, Sharpe) i rozliczaj ich rzeczywistą skuteczność po zakończeniu spotkań.")
