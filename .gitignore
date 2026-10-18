@@ -46,6 +46,7 @@ models/*.booster
 .DS_Store
 Thumbs.db
 
-# Logs
+# Logs & Runtime Caches
 logs/
+artifacts/recent_engine_picks_*.json
 *.log
