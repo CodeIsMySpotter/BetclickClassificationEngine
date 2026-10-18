@@ -562,11 +562,12 @@ def fetch_recent_engine_picks(
         if not opps:
             continue
 
+        effective_slate_size = 20 if num_bets > 50 else slate_size
         slate = optimizer.optimize_daily_slate(
             opportunities=opps,
             target_date=m_date,
             daily_budget=daily_budget,
-            slate_size=slate_size,
+            slate_size=effective_slate_size,
             selection_mode=strategy_mode
         )
 

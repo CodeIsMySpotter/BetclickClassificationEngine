@@ -459,13 +459,20 @@ with tab_timeline:
     is_recent_picks_mode = data_source.startswith("📜")
 
     if is_recent_picks_mode:
-        ctrl1, ctrl2, ctrl3 = st.columns([3, 2, 3])
+        ctrl1, ctrl2, ctrl3 = st.columns([4, 2, 3])
         with ctrl1:
-            num_bets_to_fetch = st.slider("Liczba ostatnich zakładów wstecz do analizy:", min_value=5, max_value=50, value=20, step=5)
+            num_bets_to_fetch = st.slider(
+                "Liczba ostatnich zakładów wstecz do analizy:",
+                min_value=10,
+                max_value=1500,
+                value=250,
+                step=25,
+                help="Wybierz wielkość próby od 10 do 1500 zakładów wstecz z bazy historycznej."
+            )
         with ctrl2:
             force_calc = st.button("🔄 Przelicz / Zassij historię wstecz")
         with ctrl3:
-            st.caption(f"Pobiera dokładnie **{num_bets_to_fetch}** zweryfikowanych typów silnika z ostatnich rozegranych meczów.")
+            st.caption(f"Pobiera do **{num_bets_to_fetch}** zweryfikowanych typów silnika wstecz (do 4 pełnych sezonów).")
 
         from src.analysis.live_paper_trader import fetch_recent_engine_picks
         recent_data = fetch_recent_engine_picks(
@@ -764,11 +771,18 @@ with tab_timeline:
     if not filtered_bets:
         st.warning("Brak zakładów spełniających wybrane kryteria filtrów.")
     else:
+        if len(filtered_bets) > 60:
+            st.info(f"💡 Ze względu na płynność interfejsu, poniżej wyświetlam 60 najnowszych kart zakładów (z {len(filtered_bets)} wszystkich). Wszystkie {len(filtered_bets)} zakładów są w 100% uwzględnione na wykresach powyżej i w metrykach KPI.")
+            show_all_cards = st.checkbox(f"Pokaż wszystkie {len(filtered_bets)} kart zakładów (może zwolnić przewijanie)", value=False)
+            display_bets = filtered_bets if show_all_cards else filtered_bets[:60]
+        else:
+            display_bets = filtered_bets
+
         # Grupujemy zakłady po dacie
-        dates_order = sorted(list(set(b["date"] for b in filtered_bets)), reverse=True)
+        dates_order = sorted(list(set(b["date"] for b in display_bets)), reverse=True)
         
         for d in dates_order:
-            day_bets = [b for b in filtered_bets if b["date"] == d]
+            day_bets = [b for b in display_bets if b["date"] == d]
             day_pnl = sum((b.get("pnl") or 0.0) for b in day_bets)
             day_won = sum(1 for b in day_bets if b["status"] == "WON")
             day_tot = len(day_bets)
