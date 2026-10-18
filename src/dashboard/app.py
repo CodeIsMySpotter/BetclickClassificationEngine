@@ -491,6 +491,14 @@ with tab_timeline:
         timeline_records = recent_data.get("timeline", [])
         initial_budget = recent_data.get("summary", {}).get("start_balance", initial_budget)
 
+        if len(bets_pool) < num_bets_to_fetch:
+            st.info(
+                f"💡 **Informacja o dostępnej próbie:** W całej 4-letniej historii (1520 meczów) "
+                f"znaleziono łącznie **{len(bets_pool)}** elitarnych zakładów spełniających aktywne filtry "
+                f"(Minimalna szansa: **{min_win_prob_input*100:.0f}%**, Kursy: **{odds_range[0]:.2f} – {odds_range[1]:.2f}**, 1X ≤ **{float(config.get('strategy', {}).get('max_odds_1x', 1.25)):.2f}**). "
+                f"Zassano 100% dostępnych okazji z całej historii. Aby zwiększyć liczbę kuponów, zmniejsz w lewym menu 'Minimalną szansę modelu' (np. do 75% lub 70%)."
+            )
+
     elif data_source.startswith("⏪"):
         if not REPLAY_TIMELINE_JSON.exists():
             st.warning("Brak zapisanego pliku osi czasu Replay 2026. Kliknij poniższy przycisk, aby go wygenerować.")

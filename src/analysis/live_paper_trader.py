@@ -518,6 +518,15 @@ def fetch_recent_engine_picks(
     with open(BASE_DIR / "config" / "config.yaml", "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
 
+    cfg_copy = dict(config)
+    cfg_copy["strategy"] = dict(config.get("strategy", {}))
+    cfg_copy["strategy"]["min_model_prob"] = min_prob
+    cfg_copy["strategy"]["min_ev"] = min_ev
+    cfg_copy["strategy"]["max_ev"] = max_ev
+    cfg_copy["strategy"]["min_odds"] = min_odds
+    cfg_copy["strategy"]["max_odds"] = max_odds
+    cfg_copy["strategy"]["max_odds_1x"] = max_odds_1x
+
     optimizer = DayReturnOptimizer(
         min_probability=min_prob,
         min_ev=min_ev,
@@ -526,7 +535,7 @@ def fetch_recent_engine_picks(
         max_odds=max_odds,
         max_odds_1x=max_odds_1x
     )
-    engine = FootballInferenceEngine(config=config)
+    engine = FootballInferenceEngine(config=cfg_copy)
 
     collected_bets = []
     scanned_days = 0
@@ -535,7 +544,7 @@ def fetch_recent_engine_picks(
         if len(collected_bets) >= num_bets:
             break
         df_day = df[df["match_date"].dt.date == m_date]
-        if len(df_day) < 2:
+        if df_day.empty:
             continue
         scanned_days += 1
 
