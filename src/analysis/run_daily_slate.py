@@ -9,7 +9,12 @@ import datetime
 import json
 import logging
 from pathlib import Path
+import sys
 import yaml
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
 
 from src.core.domain import SportType
 from src.optimizer.day_optimizer import DayReturnOptimizer
@@ -19,7 +24,6 @@ from src.sports.football.model import FootballInferenceEngine
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("DailySlateRunner")
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
 ARTIFACTS_DIR = BASE_DIR / "artifacts"
 ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
 

@@ -7,6 +7,13 @@ Quarter-Kelly capital allocations, and interactive bankroll risk controls.
 import datetime
 import json
 from pathlib import Path
+import sys
+
+# Upewniamy się, że główny katalog projektu jest zawsze w sys.path (niezależnie od sposobu uruchomienia streamlit)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
