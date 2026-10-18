@@ -1,0 +1,836 @@
+{
+  "campaigns": [
+    {
+      "campaign_id": "campaign_2026-10-18_20261018_145653",
+      "name": "Wyzwanie Dnia 2026-10-18",
+      "created_at": "2026-10-18T14:56:53.539602",
+      "target_date": "2026-10-18",
+      "budget_per_strategy": 50.0,
+      "slate_size": 5,
+      "status": "ACTIVE",
+      "strategies": {
+        "safest_pewniaki": {
+          "name": "🛡️ PEWNIAKI (Safest)",
+          "total_stake_pln": 45.67,
+          "expected_profit_pln": 4.72,
+          "expected_roi_pct": 10.33,
+          "bets": [
+            {
+              "bet_id": "betclic_1231601704910848_1X_(Win_or_Draw)",
+              "event_id": "betclic_1231601704910848",
+              "league": "Serie A (Włochy)",
+              "match": "Juventus vs Lazio",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.15,
+              "model_prob": 0.9649335586831833,
+              "ev": 0.10967359248566066,
+              "stake_pln": 12.5,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1230834437738496_1X_(Win_or_Draw)",
+              "event_id": "betclic_1230834437738496",
+              "league": "Bundesliga (Niemcy)",
+              "match": "Bayer Leverkusen vs Freiburg",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.2,
+              "model_prob": 0.9372883933726143,
+              "ev": 0.12474607204713717,
+              "stake_pln": 12.5,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1229968260497408_DNB_(Remis_=_Zwrot)",
+              "event_id": "betclic_1229968260497408",
+              "league": "Premier League (Anglia)",
+              "match": "Brighton vs Crystal Palace",
+              "date": "2026-10-18",
+              "market": "DNB (Remis = Zwrot)",
+              "odds": 1.16,
+              "model_prob": 0.9228588955902706,
+              "ev": 0.07051631888471377,
+              "stake_pln": 10.02,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1231601576984576_1X_(Win_or_Draw)",
+              "event_id": "betclic_1231601576984576",
+              "league": "Serie A (Włochy)",
+              "match": "Udinese vs Lecce",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.21,
+              "model_prob": 0.8663246763741935,
+              "ev": 0.04825285841277416,
+              "stake_pln": 5.32,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1230956344147968_1X_(Win_or_Draw)",
+              "event_id": "betclic_1230956344147968",
+              "league": "Ligue 1 (Francja)",
+              "match": "Le Havre vs Auxerre",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.35,
+              "model_prob": 0.855100665236756,
+              "ev": 0.15438589806962066,
+              "stake_pln": 5.33,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            }
+          ],
+          "parlays": [
+            {
+              "combined_odds": 1.55,
+              "combined_prob": 0.8251,
+              "ev": 0.2789,
+              "stake_pln": 5.0,
+              "leg1": {
+                "match": "Juventus vs Lazio",
+                "market": "1X (Win or Draw)",
+                "odds": 1.15,
+                "prob": 0.9649335586831833
+              },
+              "leg2": {
+                "match": "Le Havre vs Auxerre",
+                "market": "1X (Win or Draw)",
+                "odds": 1.35,
+                "prob": 0.855100665236756
+              },
+              "status": "PENDING",
+              "pnl": null
+            },
+            {
+              "combined_odds": 1.62,
+              "combined_prob": 0.8015,
+              "ev": 0.2984,
+              "stake_pln": 5.0,
+              "leg1": {
+                "match": "Bayer Leverkusen vs Freiburg",
+                "market": "1X (Win or Draw)",
+                "odds": 1.2,
+                "prob": 0.9372883933726143
+              },
+              "leg2": {
+                "match": "Le Havre vs Auxerre",
+                "market": "1X (Win or Draw)",
+                "odds": 1.35,
+                "prob": 0.855100665236756
+              },
+              "status": "PENDING",
+              "pnl": null
+            }
+          ],
+          "summary": {
+            "total_bets": 5,
+            "won": 0,
+            "lost": 0,
+            "refunded": 0,
+            "pending": 5,
+            "realized_pnl": 0.0,
+            "realized_roi": 0.0,
+            "current_balance": 50.0
+          }
+        },
+        "max_return": {
+          "name": "💰 ZWROT (Max EV)",
+          "total_stake_pln": 40.36,
+          "expected_profit_pln": 5.71,
+          "expected_roi_pct": 14.15,
+          "bets": [
+            {
+              "bet_id": "betclic_1231601704910848_DNB_(Remis_=_Zwrot)",
+              "event_id": "betclic_1231601704910848",
+              "league": "Serie A (Włochy)",
+              "match": "Juventus vs Lazio",
+              "date": "2026-10-18",
+              "market": "DNB (Remis = Zwrot)",
+              "odds": 1.22,
+              "model_prob": 0.9594507284122462,
+              "ev": 0.17052988866294028,
+              "stake_pln": 12.5,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1230956344147968_1X_(Win_or_Draw)",
+              "event_id": "betclic_1230956344147968",
+              "league": "Ligue 1 (Francja)",
+              "match": "Le Havre vs Auxerre",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.35,
+              "model_prob": 0.855100665236756,
+              "ev": 0.15438589806962066,
+              "stake_pln": 6.15,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1229968260497408_Czysta_wygrana_(1)",
+              "event_id": "betclic_1229968260497408",
+              "league": "Premier League (Anglia)",
+              "match": "Brighton vs Crystal Palace",
+              "date": "2026-10-18",
+              "market": "Czysta wygrana (1)",
+              "odds": 1.49,
+              "model_prob": 0.7656269334596234,
+              "ev": 0.14078413085483876,
+              "stake_pln": 3.37,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1230834437738496_1X_(Win_or_Draw)",
+              "event_id": "betclic_1230834437738496",
+              "league": "Bundesliga (Niemcy)",
+              "match": "Bayer Leverkusen vs Freiburg",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.2,
+              "model_prob": 0.9372883933726143,
+              "ev": 0.12474607204713717,
+              "stake_pln": 12.5,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1229966831284224_1X_(Win_or_Draw)",
+              "event_id": "betclic_1229966831284224",
+              "league": "Premier League (Anglia)",
+              "match": "Bournemouth vs Sunderland",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.29,
+              "model_prob": 0.8543555464134603,
+              "ev": 0.10211865487336391,
+              "stake_pln": 5.84,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            }
+          ],
+          "parlays": [
+            {
+              "combined_odds": 1.46,
+              "combined_prob": 0.8993,
+              "ev": 0.313,
+              "stake_pln": 5.0,
+              "leg1": {
+                "match": "Juventus vs Lazio",
+                "market": "DNB (Remis = Zwrot)",
+                "odds": 1.22,
+                "prob": 0.9594507284122462
+              },
+              "leg2": {
+                "match": "Bayer Leverkusen vs Freiburg",
+                "market": "1X (Win or Draw)",
+                "odds": 1.2,
+                "prob": 0.9372883933726143
+              },
+              "status": "PENDING",
+              "pnl": null
+            },
+            {
+              "combined_odds": 1.65,
+              "combined_prob": 0.8204,
+              "ev": 0.3537,
+              "stake_pln": 5.0,
+              "leg1": {
+                "match": "Juventus vs Lazio",
+                "market": "DNB (Remis = Zwrot)",
+                "odds": 1.22,
+                "prob": 0.9594507284122462
+              },
+              "leg2": {
+                "match": "Le Havre vs Auxerre",
+                "market": "1X (Win or Draw)",
+                "odds": 1.35,
+                "prob": 0.855100665236756
+              },
+              "status": "PENDING",
+              "pnl": null
+            }
+          ],
+          "summary": {
+            "total_bets": 5,
+            "won": 0,
+            "lost": 0,
+            "refunded": 0,
+            "pending": 5,
+            "realized_pnl": 0.0,
+            "realized_roi": 0.0,
+            "current_balance": 50.0
+          }
+        },
+        "balanced_sharpe": {
+          "name": "⚖️ SHARPE (Balanced)",
+          "total_stake_pln": 45.39,
+          "expected_profit_pln": 5.45,
+          "expected_roi_pct": 12.01,
+          "bets": [
+            {
+              "bet_id": "betclic_1231601704910848_DNB_(Remis_=_Zwrot)",
+              "event_id": "betclic_1231601704910848",
+              "league": "Serie A (Włochy)",
+              "match": "Juventus vs Lazio",
+              "date": "2026-10-18",
+              "market": "DNB (Remis = Zwrot)",
+              "odds": 1.22,
+              "model_prob": 0.9594507284122462,
+              "ev": 0.17052988866294028,
+              "stake_pln": 12.5,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1230834437738496_1X_(Win_or_Draw)",
+              "event_id": "betclic_1230834437738496",
+              "league": "Bundesliga (Niemcy)",
+              "match": "Bayer Leverkusen vs Freiburg",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.2,
+              "model_prob": 0.9372883933726143,
+              "ev": 0.12474607204713717,
+              "stake_pln": 12.5,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1229968260497408_DNB_(Remis_=_Zwrot)",
+              "event_id": "betclic_1229968260497408",
+              "league": "Premier League (Anglia)",
+              "match": "Brighton vs Crystal Palace",
+              "date": "2026-10-18",
+              "market": "DNB (Remis = Zwrot)",
+              "odds": 1.16,
+              "model_prob": 0.9228588955902706,
+              "ev": 0.07051631888471377,
+              "stake_pln": 9.89,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1230956344147968_1X_(Win_or_Draw)",
+              "event_id": "betclic_1230956344147968",
+              "league": "Ligue 1 (Francja)",
+              "match": "Le Havre vs Auxerre",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.35,
+              "model_prob": 0.855100665236756,
+              "ev": 0.15438589806962066,
+              "stake_pln": 5.26,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1231601576984576_1X_(Win_or_Draw)",
+              "event_id": "betclic_1231601576984576",
+              "league": "Serie A (Włochy)",
+              "match": "Udinese vs Lecce",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.21,
+              "model_prob": 0.8663246763741935,
+              "ev": 0.04825285841277416,
+              "stake_pln": 5.24,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            }
+          ],
+          "parlays": [
+            {
+              "combined_odds": 1.46,
+              "combined_prob": 0.8993,
+              "ev": 0.313,
+              "stake_pln": 5.0,
+              "leg1": {
+                "match": "Juventus vs Lazio",
+                "market": "DNB (Remis = Zwrot)",
+                "odds": 1.22,
+                "prob": 0.9594507284122462
+              },
+              "leg2": {
+                "match": "Bayer Leverkusen vs Freiburg",
+                "market": "1X (Win or Draw)",
+                "odds": 1.2,
+                "prob": 0.9372883933726143
+              },
+              "status": "PENDING",
+              "pnl": null
+            },
+            {
+              "combined_odds": 1.65,
+              "combined_prob": 0.8204,
+              "ev": 0.3537,
+              "stake_pln": 5.0,
+              "leg1": {
+                "match": "Juventus vs Lazio",
+                "market": "DNB (Remis = Zwrot)",
+                "odds": 1.22,
+                "prob": 0.9594507284122462
+              },
+              "leg2": {
+                "match": "Le Havre vs Auxerre",
+                "market": "1X (Win or Draw)",
+                "odds": 1.35,
+                "prob": 0.855100665236756
+              },
+              "status": "PENDING",
+              "pnl": null
+            }
+          ],
+          "summary": {
+            "total_bets": 5,
+            "won": 0,
+            "lost": 0,
+            "refunded": 0,
+            "pending": 5,
+            "realized_pnl": 0.0,
+            "realized_roi": 0.0,
+            "current_balance": 50.0
+          }
+        }
+      }
+    },
+    {
+      "campaign_id": "campaign_2026-10-18_20261018_145739",
+      "name": "Wyzwanie Dnia 2026-10-18",
+      "created_at": "2026-10-18T14:57:39.473867",
+      "target_date": "2026-10-18",
+      "budget_per_strategy": 50.0,
+      "slate_size": 5,
+      "status": "ACTIVE",
+      "strategies": {
+        "safest_pewniaki": {
+          "name": "PEWNIAKI (Safest)",
+          "total_stake_pln": 45.67,
+          "expected_profit_pln": 4.72,
+          "expected_roi_pct": 10.33,
+          "bets": [
+            {
+              "bet_id": "betclic_1231601704910848_1X_(Win_or_Draw)",
+              "event_id": "betclic_1231601704910848",
+              "league": "Serie A (Włochy)",
+              "match": "Juventus vs Lazio",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.15,
+              "model_prob": 0.9649335586831833,
+              "ev": 0.10967359248566066,
+              "stake_pln": 12.5,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1230834437738496_1X_(Win_or_Draw)",
+              "event_id": "betclic_1230834437738496",
+              "league": "Bundesliga (Niemcy)",
+              "match": "Bayer Leverkusen vs Freiburg",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.2,
+              "model_prob": 0.9372883933726143,
+              "ev": 0.12474607204713717,
+              "stake_pln": 12.5,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1229968260497408_DNB_(Remis_=_Zwrot)",
+              "event_id": "betclic_1229968260497408",
+              "league": "Premier League (Anglia)",
+              "match": "Brighton vs Crystal Palace",
+              "date": "2026-10-18",
+              "market": "DNB (Remis = Zwrot)",
+              "odds": 1.16,
+              "model_prob": 0.9228588955902706,
+              "ev": 0.07051631888471377,
+              "stake_pln": 10.02,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1231601576984576_1X_(Win_or_Draw)",
+              "event_id": "betclic_1231601576984576",
+              "league": "Serie A (Włochy)",
+              "match": "Udinese vs Lecce",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.21,
+              "model_prob": 0.8663246763741935,
+              "ev": 0.04825285841277416,
+              "stake_pln": 5.32,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1230956344147968_1X_(Win_or_Draw)",
+              "event_id": "betclic_1230956344147968",
+              "league": "Ligue 1 (Francja)",
+              "match": "Le Havre vs Auxerre",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.35,
+              "model_prob": 0.855100665236756,
+              "ev": 0.15438589806962066,
+              "stake_pln": 5.33,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            }
+          ],
+          "parlays": [
+            {
+              "combined_odds": 1.55,
+              "combined_prob": 0.8251,
+              "ev": 0.2789,
+              "stake_pln": 5.0,
+              "leg1": {
+                "match": "Juventus vs Lazio",
+                "market": "1X (Win or Draw)",
+                "odds": 1.15,
+                "prob": 0.9649335586831833
+              },
+              "leg2": {
+                "match": "Le Havre vs Auxerre",
+                "market": "1X (Win or Draw)",
+                "odds": 1.35,
+                "prob": 0.855100665236756
+              },
+              "status": "PENDING",
+              "pnl": null
+            },
+            {
+              "combined_odds": 1.62,
+              "combined_prob": 0.8015,
+              "ev": 0.2984,
+              "stake_pln": 5.0,
+              "leg1": {
+                "match": "Bayer Leverkusen vs Freiburg",
+                "market": "1X (Win or Draw)",
+                "odds": 1.2,
+                "prob": 0.9372883933726143
+              },
+              "leg2": {
+                "match": "Le Havre vs Auxerre",
+                "market": "1X (Win or Draw)",
+                "odds": 1.35,
+                "prob": 0.855100665236756
+              },
+              "status": "PENDING",
+              "pnl": null
+            }
+          ],
+          "summary": {
+            "total_bets": 5,
+            "won": 0,
+            "lost": 0,
+            "refunded": 0,
+            "pending": 5,
+            "realized_pnl": 0.0,
+            "realized_roi": 0.0,
+            "current_balance": 50.0
+          }
+        },
+        "max_return": {
+          "name": "ZWROT (Max EV)",
+          "total_stake_pln": 40.36,
+          "expected_profit_pln": 5.71,
+          "expected_roi_pct": 14.15,
+          "bets": [
+            {
+              "bet_id": "betclic_1231601704910848_DNB_(Remis_=_Zwrot)",
+              "event_id": "betclic_1231601704910848",
+              "league": "Serie A (Włochy)",
+              "match": "Juventus vs Lazio",
+              "date": "2026-10-18",
+              "market": "DNB (Remis = Zwrot)",
+              "odds": 1.22,
+              "model_prob": 0.9594507284122462,
+              "ev": 0.17052988866294028,
+              "stake_pln": 12.5,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1230956344147968_1X_(Win_or_Draw)",
+              "event_id": "betclic_1230956344147968",
+              "league": "Ligue 1 (Francja)",
+              "match": "Le Havre vs Auxerre",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.35,
+              "model_prob": 0.855100665236756,
+              "ev": 0.15438589806962066,
+              "stake_pln": 6.15,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1229968260497408_Czysta_wygrana_(1)",
+              "event_id": "betclic_1229968260497408",
+              "league": "Premier League (Anglia)",
+              "match": "Brighton vs Crystal Palace",
+              "date": "2026-10-18",
+              "market": "Czysta wygrana (1)",
+              "odds": 1.49,
+              "model_prob": 0.7656269334596234,
+              "ev": 0.14078413085483876,
+              "stake_pln": 3.37,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1230834437738496_1X_(Win_or_Draw)",
+              "event_id": "betclic_1230834437738496",
+              "league": "Bundesliga (Niemcy)",
+              "match": "Bayer Leverkusen vs Freiburg",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.2,
+              "model_prob": 0.9372883933726143,
+              "ev": 0.12474607204713717,
+              "stake_pln": 12.5,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1229966831284224_1X_(Win_or_Draw)",
+              "event_id": "betclic_1229966831284224",
+              "league": "Premier League (Anglia)",
+              "match": "Bournemouth vs Sunderland",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.29,
+              "model_prob": 0.8543555464134603,
+              "ev": 0.10211865487336391,
+              "stake_pln": 5.84,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            }
+          ],
+          "parlays": [
+            {
+              "combined_odds": 1.46,
+              "combined_prob": 0.8993,
+              "ev": 0.313,
+              "stake_pln": 5.0,
+              "leg1": {
+                "match": "Juventus vs Lazio",
+                "market": "DNB (Remis = Zwrot)",
+                "odds": 1.22,
+                "prob": 0.9594507284122462
+              },
+              "leg2": {
+                "match": "Bayer Leverkusen vs Freiburg",
+                "market": "1X (Win or Draw)",
+                "odds": 1.2,
+                "prob": 0.9372883933726143
+              },
+              "status": "PENDING",
+              "pnl": null
+            },
+            {
+              "combined_odds": 1.65,
+              "combined_prob": 0.8204,
+              "ev": 0.3537,
+              "stake_pln": 5.0,
+              "leg1": {
+                "match": "Juventus vs Lazio",
+                "market": "DNB (Remis = Zwrot)",
+                "odds": 1.22,
+                "prob": 0.9594507284122462
+              },
+              "leg2": {
+                "match": "Le Havre vs Auxerre",
+                "market": "1X (Win or Draw)",
+                "odds": 1.35,
+                "prob": 0.855100665236756
+              },
+              "status": "PENDING",
+              "pnl": null
+            }
+          ],
+          "summary": {
+            "total_bets": 5,
+            "won": 0,
+            "lost": 0,
+            "refunded": 0,
+            "pending": 5,
+            "realized_pnl": 0.0,
+            "realized_roi": 0.0,
+            "current_balance": 50.0
+          }
+        },
+        "balanced_sharpe": {
+          "name": "SHARPE (Balanced)",
+          "total_stake_pln": 45.39,
+          "expected_profit_pln": 5.45,
+          "expected_roi_pct": 12.01,
+          "bets": [
+            {
+              "bet_id": "betclic_1231601704910848_DNB_(Remis_=_Zwrot)",
+              "event_id": "betclic_1231601704910848",
+              "league": "Serie A (Włochy)",
+              "match": "Juventus vs Lazio",
+              "date": "2026-10-18",
+              "market": "DNB (Remis = Zwrot)",
+              "odds": 1.22,
+              "model_prob": 0.9594507284122462,
+              "ev": 0.17052988866294028,
+              "stake_pln": 12.5,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1230834437738496_1X_(Win_or_Draw)",
+              "event_id": "betclic_1230834437738496",
+              "league": "Bundesliga (Niemcy)",
+              "match": "Bayer Leverkusen vs Freiburg",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.2,
+              "model_prob": 0.9372883933726143,
+              "ev": 0.12474607204713717,
+              "stake_pln": 12.5,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1229968260497408_DNB_(Remis_=_Zwrot)",
+              "event_id": "betclic_1229968260497408",
+              "league": "Premier League (Anglia)",
+              "match": "Brighton vs Crystal Palace",
+              "date": "2026-10-18",
+              "market": "DNB (Remis = Zwrot)",
+              "odds": 1.16,
+              "model_prob": 0.9228588955902706,
+              "ev": 0.07051631888471377,
+              "stake_pln": 9.89,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1230956344147968_1X_(Win_or_Draw)",
+              "event_id": "betclic_1230956344147968",
+              "league": "Ligue 1 (Francja)",
+              "match": "Le Havre vs Auxerre",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.35,
+              "model_prob": 0.855100665236756,
+              "ev": 0.15438589806962066,
+              "stake_pln": 5.26,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            },
+            {
+              "bet_id": "betclic_1231601576984576_1X_(Win_or_Draw)",
+              "event_id": "betclic_1231601576984576",
+              "league": "Serie A (Włochy)",
+              "match": "Udinese vs Lecce",
+              "date": "2026-10-18",
+              "market": "1X (Win or Draw)",
+              "odds": 1.21,
+              "model_prob": 0.8663246763741935,
+              "ev": 0.04825285841277416,
+              "stake_pln": 5.24,
+              "status": "PENDING",
+              "result": null,
+              "pnl": null
+            }
+          ],
+          "parlays": [
+            {
+              "combined_odds": 1.46,
+              "combined_prob": 0.8993,
+              "ev": 0.313,
+              "stake_pln": 5.0,
+              "leg1": {
+                "match": "Juventus vs Lazio",
+                "market": "DNB (Remis = Zwrot)",
+                "odds": 1.22,
+                "prob": 0.9594507284122462
+              },
+              "leg2": {
+                "match": "Bayer Leverkusen vs Freiburg",
+                "market": "1X (Win or Draw)",
+                "odds": 1.2,
+                "prob": 0.9372883933726143
+              },
+              "status": "PENDING",
+              "pnl": null
+            },
+            {
+              "combined_odds": 1.65,
+              "combined_prob": 0.8204,
+              "ev": 0.3537,
+              "stake_pln": 5.0,
+              "leg1": {
+                "match": "Juventus vs Lazio",
+                "market": "DNB (Remis = Zwrot)",
+                "odds": 1.22,
+                "prob": 0.9594507284122462
+              },
+              "leg2": {
+                "match": "Le Havre vs Auxerre",
+                "market": "1X (Win or Draw)",
+                "odds": 1.35,
+                "prob": 0.855100665236756
+              },
+              "status": "PENDING",
+              "pnl": null
+            }
+          ],
+          "summary": {
+            "total_bets": 5,
+            "won": 0,
+            "lost": 0,
+            "refunded": 0,
+            "pending": 5,
+            "realized_pnl": 0.0,
+            "realized_roi": 0.0,
+            "current_balance": 50.0
+          }
+        }
+      }
+    }
+  ]
+}

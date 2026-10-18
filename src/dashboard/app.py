@@ -228,8 +228,9 @@ with col4:
 st.markdown("---")
 
 # Zakładki
-tab_day, tab_bets, tab_parlays, tab_all, tab_visuals = st.tabs([
+tab_day, tab_live, tab_bets, tab_parlays, tab_all, tab_visuals = st.tabs([
     "📅 Dzienny Optymalizator (Day Return Optimizer)",
+    "🧪 Test na Żywo (Live Paper Trading)",
     "🎯 Wszystkie Rekomendacje (Single)",
     "⚡ Duble Inwestycyjne (2-Leg Parlay)",
     "📋 Pełna tabela spotkań",
@@ -346,6 +347,72 @@ with tab_day:
                             f"⚽ **Mecz 2:** {p['leg2']['match']} -> **{p['leg2']['market']}** ({p['leg2']['odds']:.2f})\n\n"
                             f"💵 **Stawka:** **{p['stake_pln']:.2f} PLN** -> Do wygrania: **{p['potential_return_pln']:.2f} PLN**"
                         )
+with tab_live:
+    st.subheader("🧪 Test na Żywym Organizmie (Out-of-Sample Live Audit)")
+    st.caption("Rejestruj prognozy na nadchodzące mecze dla 3 podejść (Pewniaki, Zwrot, Sharpe) i rozliczaj ich rzeczywistą skuteczność po zakończeniu spotkań.")
+
+    from src.analysis.live_paper_trader import (
+        load_ledger, record_next_week_campaign, evaluate_active_campaigns
+    )
+
+    ledger_data = load_ledger()
+    campaigns = ledger_data.get("campaigns", [])
+
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        if st.button("📌 Zarejestruj nową kampanię na najbliższą kolejkę (Pewniaki, Zwrot, Sharpe)"):
+            with st.spinner("Zapisywanie kuponów dla 3 strategii do rejestru audytowego..."):
+                target_dt = selected_date_str if 'selected_date_str' in locals() else datetime.date.today().isoformat()
+                new_camp = record_next_week_campaign(target_date_str=target_dt, budget_per_strategy=float(bankroll), slate_size=5)
+            st.success(f"Zapisano kampanię '{new_camp['name']}'! Bety oczekują na rozegranie.")
+            st.rerun()
+
+    with col_btn2:
+        if st.button("🔄 Sprawdź wyniki i rozlicz zakończone mecze"):
+            with st.spinner("Weryfikacja wyników zakończonych meczów..."):
+                updated_ledger = evaluate_active_campaigns()
+            st.success("Rozliczenie zaktualizowane!")
+            st.rerun()
+
+    if not campaigns:
+        st.info("Brak aktywnych kampanii. Kliknij przycisk powyżej, aby zamrozić prognozy na najbliższą kolejkę.")
+    else:
+        camp_names = [f"{c['name']} ({c['target_date']}) - Status: {c.get('status', 'ACTIVE')}" for c in campaigns]
+        selected_camp_idx = st.selectbox("Wybierz zarejestrowaną sesję", range(len(campaigns)), format_func=lambda i: camp_names[i], index=len(campaigns)-1)
+        active_camp = campaigns[selected_camp_idx]
+
+        st.markdown(f"### 📊 Wyniki Sesji: **{active_camp['name']}** (Data: {active_camp['target_date']})")
+        
+        # 3 kolumny porównawcze
+        strats = active_camp.get("strategies", {})
+        strat_cols = st.columns(len(strats))
+
+        for col, (m_key, s_data) in zip(strat_cols, strats.items()):
+            sm = s_data.get("summary", {})
+            with col:
+                st.markdown(f"#### **{s_data['name']}**")
+                pnl = sm.get("realized_pnl", 0.0)
+                roi = sm.get("realized_roi", 0.0)
+                bal = sm.get("current_balance", active_camp["budget_per_strategy"])
+                
+                st.metric("Stan Konta", f"{bal:.2f} PLN", f"{pnl:+.2f} PLN ({roi:+.1f}%)")
+                st.caption(f"Trafione: **{sm.get('won', 0)}** | Zwroty: **{sm.get('refunded', 0)}** | Przegrane: **{sm.get('lost', 0)}** | Oczekuje: **{sm.get('pending', 0)}**")
+
+                # Kupony w pigułce
+                for b in s_data.get("bets", []):
+                    status = b.get("status", "PENDING")
+                    if status == "WON":
+                        badge = "🟢 WYGRANY"
+                    elif status == "LOST":
+                        badge = "🔴 PRZEGRANY"
+                    elif status == "REFUNDED":
+                        badge = "🟡 ZWROT"
+                    else:
+                        badge = "⏳ OCZEKUJE"
+
+                    res_txt = f"[{b['result']['fthg']}:{b['result']['ftag']}] " if b.get("result") else ""
+                    pnl_txt = f"{b['pnl']:+.2f} PLN" if b.get("pnl") is not None else ""
+                    st.markdown(f"- **{badge}** {res_txt}{b['match']} -> **{b['market']}** @ {b['odds']:.2f} {pnl_txt}")
 
 PARLAYS_JSON = ARTIFACTS_DIR / "optimal_parlays.json"
 
