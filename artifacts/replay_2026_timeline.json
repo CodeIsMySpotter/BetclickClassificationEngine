@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-18T15:10:24.430059",
+  "generated_at": "2026-10-18T15:45:12.983888",
   "num_matchdays": 13,
   "budget_per_day": 50.0,
   "timeline": [
@@ -32,145 +32,145 @@
     {
       "date": "2026-04-25",
       "matches_count": 4,
-      "safest_pewniaki_day_pnl": 12.45,
-      "safest_pewniaki_cum_pnl": 15.95,
-      "safest_pewniaki_balance": 65.95,
-      "max_return_day_pnl": 15.35,
-      "max_return_cum_pnl": 18.85,
-      "max_return_balance": 68.85,
-      "balanced_sharpe_day_pnl": 12.45,
-      "balanced_sharpe_cum_pnl": 15.95,
-      "balanced_sharpe_balance": 65.95
+      "safest_pewniaki_day_pnl": 15.7,
+      "safest_pewniaki_cum_pnl": 19.2,
+      "safest_pewniaki_balance": 69.2,
+      "max_return_day_pnl": 15.7,
+      "max_return_cum_pnl": 19.2,
+      "max_return_balance": 69.2,
+      "balanced_sharpe_day_pnl": 12.98,
+      "balanced_sharpe_cum_pnl": 16.48,
+      "balanced_sharpe_balance": 66.48
     },
     {
       "date": "2026-04-26",
       "matches_count": 4,
       "safest_pewniaki_day_pnl": 3.5,
-      "safest_pewniaki_cum_pnl": 19.45,
-      "safest_pewniaki_balance": 69.45,
+      "safest_pewniaki_cum_pnl": 22.7,
+      "safest_pewniaki_balance": 72.7,
       "max_return_day_pnl": 3.5,
-      "max_return_cum_pnl": 22.35,
-      "max_return_balance": 72.35,
+      "max_return_cum_pnl": 22.7,
+      "max_return_balance": 72.7,
       "balanced_sharpe_day_pnl": 3.5,
-      "balanced_sharpe_cum_pnl": 19.45,
-      "balanced_sharpe_balance": 69.45
+      "balanced_sharpe_cum_pnl": 19.98,
+      "balanced_sharpe_balance": 69.98
     },
     {
       "date": "2026-05-02",
       "matches_count": 4,
       "safest_pewniaki_day_pnl": -12.5,
-      "safest_pewniaki_cum_pnl": 6.95,
-      "safest_pewniaki_balance": 56.95,
+      "safest_pewniaki_cum_pnl": 10.2,
+      "safest_pewniaki_balance": 60.2,
       "max_return_day_pnl": -12.5,
-      "max_return_cum_pnl": 9.85,
-      "max_return_balance": 59.85,
+      "max_return_cum_pnl": 10.2,
+      "max_return_balance": 60.2,
       "balanced_sharpe_day_pnl": -12.5,
-      "balanced_sharpe_cum_pnl": 6.95,
-      "balanced_sharpe_balance": 56.95
+      "balanced_sharpe_cum_pnl": 7.48,
+      "balanced_sharpe_balance": 57.48
     },
     {
       "date": "2026-05-03",
       "matches_count": 4,
       "safest_pewniaki_day_pnl": 2.37,
-      "safest_pewniaki_cum_pnl": 9.32,
-      "safest_pewniaki_balance": 59.32,
+      "safest_pewniaki_cum_pnl": 12.57,
+      "safest_pewniaki_balance": 62.57,
       "max_return_day_pnl": 2.37,
-      "max_return_cum_pnl": 12.22,
-      "max_return_balance": 62.22,
+      "max_return_cum_pnl": 12.57,
+      "max_return_balance": 62.57,
       "balanced_sharpe_day_pnl": 2.37,
-      "balanced_sharpe_cum_pnl": 9.32,
-      "balanced_sharpe_balance": 59.32
+      "balanced_sharpe_cum_pnl": 9.85,
+      "balanced_sharpe_balance": 59.85
     },
     {
       "date": "2026-05-09",
       "matches_count": 4,
-      "safest_pewniaki_day_pnl": 3.5,
-      "safest_pewniaki_cum_pnl": 12.82,
-      "safest_pewniaki_balance": 62.82,
+      "safest_pewniaki_day_pnl": 5.62,
+      "safest_pewniaki_cum_pnl": 18.19,
+      "safest_pewniaki_balance": 68.19,
       "max_return_day_pnl": 5.62,
-      "max_return_cum_pnl": 17.84,
-      "max_return_balance": 67.84,
+      "max_return_cum_pnl": 18.19,
+      "max_return_balance": 68.19,
       "balanced_sharpe_day_pnl": 3.5,
-      "balanced_sharpe_cum_pnl": 12.82,
-      "balanced_sharpe_balance": 62.82
+      "balanced_sharpe_cum_pnl": 13.35,
+      "balanced_sharpe_balance": 63.35
     },
     {
       "date": "2026-05-10",
       "matches_count": 4,
       "safest_pewniaki_day_pnl": 0.0,
-      "safest_pewniaki_cum_pnl": 12.82,
-      "safest_pewniaki_balance": 62.82,
+      "safest_pewniaki_cum_pnl": 18.19,
+      "safest_pewniaki_balance": 68.19,
       "max_return_day_pnl": 0.0,
-      "max_return_cum_pnl": 17.84,
-      "max_return_balance": 67.84,
+      "max_return_cum_pnl": 18.19,
+      "max_return_balance": 68.19,
       "balanced_sharpe_day_pnl": 0.0,
-      "balanced_sharpe_cum_pnl": 12.82,
-      "balanced_sharpe_balance": 62.82
+      "balanced_sharpe_cum_pnl": 13.35,
+      "balanced_sharpe_balance": 63.35
     },
     {
       "date": "2026-05-12",
       "matches_count": 3,
       "safest_pewniaki_day_pnl": 0.0,
-      "safest_pewniaki_cum_pnl": 12.82,
-      "safest_pewniaki_balance": 62.82,
+      "safest_pewniaki_cum_pnl": 18.19,
+      "safest_pewniaki_balance": 68.19,
       "max_return_day_pnl": 0.0,
-      "max_return_cum_pnl": 17.84,
-      "max_return_balance": 67.84,
+      "max_return_cum_pnl": 18.19,
+      "max_return_balance": 68.19,
       "balanced_sharpe_day_pnl": 0.0,
-      "balanced_sharpe_cum_pnl": 12.82,
-      "balanced_sharpe_balance": 62.82
+      "balanced_sharpe_cum_pnl": 13.35,
+      "balanced_sharpe_balance": 63.35
     },
     {
       "date": "2026-05-13",
       "matches_count": 4,
       "safest_pewniaki_day_pnl": -8.75,
-      "safest_pewniaki_cum_pnl": 4.07,
-      "safest_pewniaki_balance": 54.07,
+      "safest_pewniaki_cum_pnl": 9.44,
+      "safest_pewniaki_balance": 59.44,
       "max_return_day_pnl": -8.75,
-      "max_return_cum_pnl": 9.09,
-      "max_return_balance": 59.09,
+      "max_return_cum_pnl": 9.44,
+      "max_return_balance": 59.44,
       "balanced_sharpe_day_pnl": -8.75,
-      "balanced_sharpe_cum_pnl": 4.07,
-      "balanced_sharpe_balance": 54.07
+      "balanced_sharpe_cum_pnl": 4.6,
+      "balanced_sharpe_balance": 54.6
     },
     {
       "date": "2026-05-14",
       "matches_count": 3,
       "safest_pewniaki_day_pnl": 6.88,
-      "safest_pewniaki_cum_pnl": 10.95,
-      "safest_pewniaki_balance": 60.95,
+      "safest_pewniaki_cum_pnl": 16.32,
+      "safest_pewniaki_balance": 66.32,
       "max_return_day_pnl": 6.88,
-      "max_return_cum_pnl": 15.97,
-      "max_return_balance": 65.97,
+      "max_return_cum_pnl": 16.32,
+      "max_return_balance": 66.32,
       "balanced_sharpe_day_pnl": 6.88,
-      "balanced_sharpe_cum_pnl": 10.95,
-      "balanced_sharpe_balance": 60.95
+      "balanced_sharpe_cum_pnl": 11.48,
+      "balanced_sharpe_balance": 61.48
     },
     {
       "date": "2026-05-17",
       "matches_count": 10,
-      "safest_pewniaki_day_pnl": 12.85,
-      "safest_pewniaki_cum_pnl": 23.8,
-      "safest_pewniaki_balance": 73.8,
-      "max_return_day_pnl": 12.85,
-      "max_return_cum_pnl": 28.82,
-      "max_return_balance": 78.82,
-      "balanced_sharpe_day_pnl": 12.85,
-      "balanced_sharpe_cum_pnl": 23.8,
-      "balanced_sharpe_balance": 73.8
+      "safest_pewniaki_day_pnl": 13.03,
+      "safest_pewniaki_cum_pnl": 29.35,
+      "safest_pewniaki_balance": 79.35,
+      "max_return_day_pnl": 13.03,
+      "max_return_cum_pnl": 29.35,
+      "max_return_balance": 79.35,
+      "balanced_sharpe_day_pnl": 13.03,
+      "balanced_sharpe_cum_pnl": 24.51,
+      "balanced_sharpe_balance": 74.51
     },
     {
       "date": "2026-05-23",
       "matches_count": 9,
-      "safest_pewniaki_day_pnl": 8.75,
-      "safest_pewniaki_cum_pnl": 32.55,
-      "safest_pewniaki_balance": 82.55,
-      "max_return_day_pnl": 8.75,
-      "max_return_cum_pnl": 37.57,
-      "max_return_balance": 87.57,
-      "balanced_sharpe_day_pnl": 8.75,
-      "balanced_sharpe_cum_pnl": 32.55,
-      "balanced_sharpe_balance": 82.55
+      "safest_pewniaki_day_pnl": 8.56,
+      "safest_pewniaki_cum_pnl": 37.91,
+      "safest_pewniaki_balance": 87.91,
+      "max_return_day_pnl": 8.56,
+      "max_return_cum_pnl": 37.91,
+      "max_return_balance": 87.91,
+      "balanced_sharpe_day_pnl": 8.56,
+      "balanced_sharpe_cum_pnl": 33.07,
+      "balanced_sharpe_balance": 83.07
     }
   ],
   "strategies": {
@@ -181,9 +181,9 @@
       "lost": 2,
       "refunded": 1,
       "win_rate_pct": 84.2,
-      "total_stake": 225.34,
-      "net_pnl": 32.55,
-      "roi_pct": 14.44,
+      "total_stake": 227.35,
+      "net_pnl": 37.91,
+      "roi_pct": 16.67,
       "bets": [
         {
           "date": "2026-04-23",
@@ -200,7 +200,7 @@
           "pnl": 3.5,
           "strategy": "safest_pewniaki",
           "strategy_name": "PEWNIAKI (Safest)",
-          "rationale": "Elo Diff: +140.6, xG Diff: +0.69, szansa wygranej/remisu: 89.4%"
+          "rationale": "Elo Diff: +140.6, xG Diff: +0.69, szansa 1X: 89.4%"
         },
         {
           "date": "2026-04-25",
@@ -217,24 +217,24 @@
           "pnl": 4.63,
           "strategy": "safest_pewniaki",
           "strategy_name": "PEWNIAKI (Safest)",
-          "rationale": "Elo Diff: +173.6, xG Diff: +0.11, szansa wygranej/remisu: 85.7%"
+          "rationale": "Elo Diff: +173.6, xG Diff: +0.11, szansa 1X: 85.7%"
         },
         {
           "date": "2026-04-25",
           "match": "Alaves vs Mallorca",
           "league": "Liga",
-          "market": "1X (Win or Draw)",
-          "odds": 1.27,
-          "fair_odds": 1.2151341426328686,
-          "model_prob": 82.3,
-          "ev": 4.5,
+          "market": "DNB (Remis = Zwrot)",
+          "odds": 1.47,
+          "fair_odds": 1.3071486544978768,
+          "model_prob": 76.5,
+          "ev": 12.5,
           "stake_pln": 12.5,
           "status": "WON",
           "score": "2:1",
-          "pnl": 3.38,
+          "pnl": 5.88,
           "strategy": "safest_pewniaki",
           "strategy_name": "PEWNIAKI (Safest)",
-          "rationale": "Elo Diff: +77.7, xG Diff: +0.30, szansa wygranej/remisu: 82.3%"
+          "rationale": "Pewność bez remisu: 76.5%, EV: +12.5%"
         },
         {
           "date": "2026-04-25",
@@ -245,10 +245,10 @@
           "fair_odds": 1.3933903648769035,
           "model_prob": 71.8,
           "ev": 6.2,
-          "stake_pln": 9.25,
+          "stake_pln": 10.82,
           "status": "WON",
           "score": "2:1",
-          "pnl": 4.44,
+          "pnl": 5.19,
           "strategy": "safest_pewniaki",
           "strategy_name": "PEWNIAKI (Safest)",
           "rationale": "Pewność bez remisu: 71.8%, EV: +6.2%"
@@ -268,7 +268,7 @@
           "pnl": 3.5,
           "strategy": "safest_pewniaki",
           "strategy_name": "PEWNIAKI (Safest)",
-          "rationale": "Elo Diff: +140.8, xG Diff: +1.03, szansa wygranej/remisu: 92.0%"
+          "rationale": "Elo Diff: +140.8, xG Diff: +1.03, szansa 1X: 92.0%"
         },
         {
           "date": "2026-05-02",
@@ -285,7 +285,7 @@
           "pnl": -12.5,
           "strategy": "safest_pewniaki",
           "strategy_name": "PEWNIAKI (Safest)",
-          "rationale": "Elo Diff: +56.5, xG Diff: -0.09, szansa wygranej/remisu: 76.1%"
+          "rationale": "Elo Diff: +56.5, xG Diff: -0.09, szansa 1X: 76.1%"
         },
         {
           "date": "2026-05-03",
@@ -308,18 +308,18 @@
           "date": "2026-05-09",
           "match": "Sevilla vs Espanyol",
           "league": "Liga",
-          "market": "1X (Win or Draw)",
-          "odds": 1.28,
-          "fair_odds": 1.2143611668830612,
-          "model_prob": 82.3,
-          "ev": 5.4,
+          "market": "DNB (Remis = Zwrot)",
+          "odds": 1.45,
+          "fair_odds": 1.306023220422199,
+          "model_prob": 76.6,
+          "ev": 11.0,
           "stake_pln": 12.5,
           "status": "WON",
           "score": "2:1",
-          "pnl": 3.5,
+          "pnl": 5.62,
           "strategy": "safest_pewniaki",
           "strategy_name": "PEWNIAKI (Safest)",
-          "rationale": "Elo Diff: +62.9, xG Diff: +0.38, szansa wygranej/remisu: 82.3%"
+          "rationale": "Pewność bez remisu: 76.6%, EV: +11.0%"
         },
         {
           "date": "2026-05-13",
@@ -336,7 +336,7 @@
           "pnl": -12.5,
           "strategy": "safest_pewniaki",
           "strategy_name": "PEWNIAKI (Safest)",
-          "rationale": "Elo Diff: +217.1, xG Diff: +0.13, szansa wygranej/remisu: 87.9%"
+          "rationale": "Elo Diff: +217.1, xG Diff: +0.13, szansa 1X: 87.9%"
         },
         {
           "date": "2026-05-13",
@@ -353,7 +353,7 @@
           "pnl": 3.75,
           "strategy": "safest_pewniaki",
           "strategy_name": "PEWNIAKI (Safest)",
-          "rationale": "Elo Diff: +94.2, xG Diff: +0.32, szansa wygranej/remisu: 83.5%"
+          "rationale": "Elo Diff: +94.2, xG Diff: +0.32, szansa 1X: 83.5%"
         },
         {
           "date": "2026-05-14",
@@ -370,7 +370,7 @@
           "pnl": 4.13,
           "strategy": "safest_pewniaki",
           "strategy_name": "PEWNIAKI (Safest)",
-          "rationale": "Elo Diff: +44.1, xG Diff: +1.08, szansa wygranej/remisu: 88.4%"
+          "rationale": "Elo Diff: +44.1, xG Diff: +1.08, szansa 1X: 88.4%"
         },
         {
           "date": "2026-05-14",
@@ -404,7 +404,7 @@
           "pnl": 3.63,
           "strategy": "safest_pewniaki",
           "strategy_name": "PEWNIAKI (Safest)",
-          "rationale": "Elo Diff: +20.1, xG Diff: +1.18, szansa wygranej/remisu: 88.1%"
+          "rationale": "Elo Diff: +20.1, xG Diff: +1.18, szansa 1X: 88.1%"
         },
         {
           "date": "2026-05-17",
@@ -421,7 +421,7 @@
           "pnl": 3.75,
           "strategy": "safest_pewniaki",
           "strategy_name": "PEWNIAKI (Safest)",
-          "rationale": "Elo Diff: +85.5, xG Diff: +0.71, szansa wygranej/remisu: 87.0%"
+          "rationale": "Elo Diff: +85.5, xG Diff: +0.71, szansa 1X: 87.0%"
         },
         {
           "date": "2026-05-17",
@@ -432,10 +432,10 @@
           "fair_odds": 1.185744239121231,
           "model_prob": 84.3,
           "ev": 5.4,
-          "stake_pln": 11.42,
+          "stake_pln": 12.5,
           "status": "WON",
           "score": "1:0",
-          "pnl": 2.86,
+          "pnl": 3.12,
           "strategy": "safest_pewniaki",
           "strategy_name": "PEWNIAKI (Safest)",
           "rationale": "Pewność bez remisu: 84.3%, EV: +5.4%"
@@ -449,13 +449,13 @@
           "fair_odds": 1.3340502420987934,
           "model_prob": 75.0,
           "ev": 5.7,
-          "stake_pln": 6.37,
+          "stake_pln": 6.16,
           "status": "WON",
           "score": "2:0",
-          "pnl": 2.61,
+          "pnl": 2.53,
           "strategy": "safest_pewniaki",
           "strategy_name": "PEWNIAKI (Safest)",
-          "rationale": "Elo Diff: -9.4, xG Diff: +0.19, szansa wygranej/remisu: 75.0%"
+          "rationale": "Elo Diff: -9.4, xG Diff: +0.19, szansa 1X: 75.0%"
         },
         {
           "date": "2026-05-23",
@@ -472,7 +472,7 @@
           "pnl": 4.0,
           "strategy": "safest_pewniaki",
           "strategy_name": "PEWNIAKI (Safest)",
-          "rationale": "Elo Diff: +102.9, xG Diff: +0.57, szansa wygranej/remisu: 86.5%"
+          "rationale": "Elo Diff: +102.9, xG Diff: +0.57, szansa 1X: 86.5%"
         },
         {
           "date": "2026-05-23",
@@ -500,10 +500,10 @@
           "fair_odds": 1.3427248087070633,
           "model_prob": 74.5,
           "ev": 7.2,
-          "stake_pln": 10.8,
+          "stake_pln": 10.37,
           "status": "WON",
           "score": "3:0",
-          "pnl": 4.75,
+          "pnl": 4.56,
           "strategy": "safest_pewniaki",
           "strategy_name": "PEWNIAKI (Safest)",
           "rationale": "Dominacja gospodarzy (Pewność 74.5%, kurs 1.44)"
@@ -517,9 +517,9 @@
       "lost": 2,
       "refunded": 1,
       "win_rate_pct": 84.2,
-      "total_stake": 226.17,
-      "net_pnl": 37.57,
-      "roi_pct": 16.61,
+      "total_stake": 227.35,
+      "net_pnl": 37.91,
+      "roi_pct": 16.67,
       "bets": [
         {
           "date": "2026-04-23",
@@ -536,7 +536,7 @@
           "pnl": 3.5,
           "strategy": "max_return",
           "strategy_name": "ZWROT (Max EV)",
-          "rationale": "Elo Diff: +140.6, xG Diff: +0.69, szansa wygranej/remisu: 89.4%"
+          "rationale": "Elo Diff: +140.6, xG Diff: +0.69, szansa 1X: 89.4%"
         },
         {
           "date": "2026-04-25",
@@ -553,7 +553,7 @@
           "pnl": 4.63,
           "strategy": "max_return",
           "strategy_name": "ZWROT (Max EV)",
-          "rationale": "Elo Diff: +173.6, xG Diff: +0.11, szansa wygranej/remisu: 85.7%"
+          "rationale": "Elo Diff: +173.6, xG Diff: +0.11, szansa 1X: 85.7%"
         },
         {
           "date": "2026-04-25",
@@ -581,10 +581,10 @@
           "fair_odds": 1.3933903648769035,
           "model_prob": 71.8,
           "ev": 6.2,
-          "stake_pln": 10.08,
+          "stake_pln": 10.82,
           "status": "WON",
           "score": "2:1",
-          "pnl": 4.84,
+          "pnl": 5.19,
           "strategy": "max_return",
           "strategy_name": "ZWROT (Max EV)",
           "rationale": "Pewność bez remisu: 71.8%, EV: +6.2%"
@@ -604,7 +604,7 @@
           "pnl": 3.5,
           "strategy": "max_return",
           "strategy_name": "ZWROT (Max EV)",
-          "rationale": "Elo Diff: +140.8, xG Diff: +1.03, szansa wygranej/remisu: 92.0%"
+          "rationale": "Elo Diff: +140.8, xG Diff: +1.03, szansa 1X: 92.0%"
         },
         {
           "date": "2026-05-02",
@@ -621,7 +621,7 @@
           "pnl": -12.5,
           "strategy": "max_return",
           "strategy_name": "ZWROT (Max EV)",
-          "rationale": "Elo Diff: +56.5, xG Diff: -0.09, szansa wygranej/remisu: 76.1%"
+          "rationale": "Elo Diff: +56.5, xG Diff: -0.09, szansa 1X: 76.1%"
         },
         {
           "date": "2026-05-03",
@@ -672,7 +672,7 @@
           "pnl": -12.5,
           "strategy": "max_return",
           "strategy_name": "ZWROT (Max EV)",
-          "rationale": "Elo Diff: +217.1, xG Diff: +0.13, szansa wygranej/remisu: 87.9%"
+          "rationale": "Elo Diff: +217.1, xG Diff: +0.13, szansa 1X: 87.9%"
         },
         {
           "date": "2026-05-13",
@@ -689,7 +689,7 @@
           "pnl": 3.75,
           "strategy": "max_return",
           "strategy_name": "ZWROT (Max EV)",
-          "rationale": "Elo Diff: +94.2, xG Diff: +0.32, szansa wygranej/remisu: 83.5%"
+          "rationale": "Elo Diff: +94.2, xG Diff: +0.32, szansa 1X: 83.5%"
         },
         {
           "date": "2026-05-14",
@@ -706,7 +706,7 @@
           "pnl": 4.13,
           "strategy": "max_return",
           "strategy_name": "ZWROT (Max EV)",
-          "rationale": "Elo Diff: +44.1, xG Diff: +1.08, szansa wygranej/remisu: 88.4%"
+          "rationale": "Elo Diff: +44.1, xG Diff: +1.08, szansa 1X: 88.4%"
         },
         {
           "date": "2026-05-14",
@@ -740,7 +740,7 @@
           "pnl": 3.63,
           "strategy": "max_return",
           "strategy_name": "ZWROT (Max EV)",
-          "rationale": "Elo Diff: +20.1, xG Diff: +1.18, szansa wygranej/remisu: 88.1%"
+          "rationale": "Elo Diff: +20.1, xG Diff: +1.18, szansa 1X: 88.1%"
         },
         {
           "date": "2026-05-17",
@@ -757,7 +757,7 @@
           "pnl": 3.75,
           "strategy": "max_return",
           "strategy_name": "ZWROT (Max EV)",
-          "rationale": "Elo Diff: +85.5, xG Diff: +0.71, szansa wygranej/remisu: 87.0%"
+          "rationale": "Elo Diff: +85.5, xG Diff: +0.71, szansa 1X: 87.0%"
         },
         {
           "date": "2026-05-17",
@@ -768,13 +768,13 @@
           "fair_odds": 1.3340502420987934,
           "model_prob": 75.0,
           "ev": 5.7,
-          "stake_pln": 6.37,
+          "stake_pln": 6.16,
           "status": "WON",
           "score": "2:0",
-          "pnl": 2.61,
+          "pnl": 2.53,
           "strategy": "max_return",
           "strategy_name": "ZWROT (Max EV)",
-          "rationale": "Elo Diff: -9.4, xG Diff: +0.19, szansa wygranej/remisu: 75.0%"
+          "rationale": "Elo Diff: -9.4, xG Diff: +0.19, szansa 1X: 75.0%"
         },
         {
           "date": "2026-05-17",
@@ -785,10 +785,10 @@
           "fair_odds": 1.185744239121231,
           "model_prob": 84.3,
           "ev": 5.4,
-          "stake_pln": 11.42,
+          "stake_pln": 12.5,
           "status": "WON",
           "score": "1:0",
-          "pnl": 2.86,
+          "pnl": 3.12,
           "strategy": "max_return",
           "strategy_name": "ZWROT (Max EV)",
           "rationale": "Pewność bez remisu: 84.3%, EV: +5.4%"
@@ -808,7 +808,7 @@
           "pnl": 4.0,
           "strategy": "max_return",
           "strategy_name": "ZWROT (Max EV)",
-          "rationale": "Elo Diff: +102.9, xG Diff: +0.57, szansa wygranej/remisu: 86.5%"
+          "rationale": "Elo Diff: +102.9, xG Diff: +0.57, szansa 1X: 86.5%"
         },
         {
           "date": "2026-05-23",
@@ -819,10 +819,10 @@
           "fair_odds": 1.3427248087070633,
           "model_prob": 74.5,
           "ev": 7.2,
-          "stake_pln": 10.8,
+          "stake_pln": 10.37,
           "status": "WON",
           "score": "3:0",
-          "pnl": 4.75,
+          "pnl": 4.56,
           "strategy": "max_return",
           "strategy_name": "ZWROT (Max EV)",
           "rationale": "Dominacja gospodarzy (Pewność 74.5%, kurs 1.44)"
@@ -853,9 +853,9 @@
       "lost": 2,
       "refunded": 1,
       "win_rate_pct": 84.2,
-      "total_stake": 225.34,
-      "net_pnl": 32.55,
-      "roi_pct": 14.44,
+      "total_stake": 226.88,
+      "net_pnl": 33.07,
+      "roi_pct": 14.58,
       "bets": [
         {
           "date": "2026-04-23",
@@ -872,7 +872,7 @@
           "pnl": 3.5,
           "strategy": "balanced_sharpe",
           "strategy_name": "SHARPE (Balanced)",
-          "rationale": "Elo Diff: +140.6, xG Diff: +0.69, szansa wygranej/remisu: 89.4%"
+          "rationale": "Elo Diff: +140.6, xG Diff: +0.69, szansa 1X: 89.4%"
         },
         {
           "date": "2026-04-25",
@@ -889,7 +889,7 @@
           "pnl": 4.63,
           "strategy": "balanced_sharpe",
           "strategy_name": "SHARPE (Balanced)",
-          "rationale": "Elo Diff: +173.6, xG Diff: +0.11, szansa wygranej/remisu: 85.7%"
+          "rationale": "Elo Diff: +173.6, xG Diff: +0.11, szansa 1X: 85.7%"
         },
         {
           "date": "2026-04-25",
@@ -906,7 +906,7 @@
           "pnl": 3.38,
           "strategy": "balanced_sharpe",
           "strategy_name": "SHARPE (Balanced)",
-          "rationale": "Elo Diff: +77.7, xG Diff: +0.30, szansa wygranej/remisu: 82.3%"
+          "rationale": "Elo Diff: +77.7, xG Diff: +0.30, szansa 1X: 82.3%"
         },
         {
           "date": "2026-04-25",
@@ -917,10 +917,10 @@
           "fair_odds": 1.3933903648769035,
           "model_prob": 71.8,
           "ev": 6.2,
-          "stake_pln": 9.25,
+          "stake_pln": 10.35,
           "status": "WON",
           "score": "2:1",
-          "pnl": 4.44,
+          "pnl": 4.97,
           "strategy": "balanced_sharpe",
           "strategy_name": "SHARPE (Balanced)",
           "rationale": "Pewność bez remisu: 71.8%, EV: +6.2%"
@@ -940,7 +940,7 @@
           "pnl": 3.5,
           "strategy": "balanced_sharpe",
           "strategy_name": "SHARPE (Balanced)",
-          "rationale": "Elo Diff: +140.8, xG Diff: +1.03, szansa wygranej/remisu: 92.0%"
+          "rationale": "Elo Diff: +140.8, xG Diff: +1.03, szansa 1X: 92.0%"
         },
         {
           "date": "2026-05-02",
@@ -957,7 +957,7 @@
           "pnl": -12.5,
           "strategy": "balanced_sharpe",
           "strategy_name": "SHARPE (Balanced)",
-          "rationale": "Elo Diff: +56.5, xG Diff: -0.09, szansa wygranej/remisu: 76.1%"
+          "rationale": "Elo Diff: +56.5, xG Diff: -0.09, szansa 1X: 76.1%"
         },
         {
           "date": "2026-05-03",
@@ -991,7 +991,7 @@
           "pnl": 3.5,
           "strategy": "balanced_sharpe",
           "strategy_name": "SHARPE (Balanced)",
-          "rationale": "Elo Diff: +62.9, xG Diff: +0.38, szansa wygranej/remisu: 82.3%"
+          "rationale": "Elo Diff: +62.9, xG Diff: +0.38, szansa 1X: 82.3%"
         },
         {
           "date": "2026-05-13",
@@ -1008,7 +1008,7 @@
           "pnl": -12.5,
           "strategy": "balanced_sharpe",
           "strategy_name": "SHARPE (Balanced)",
-          "rationale": "Elo Diff: +217.1, xG Diff: +0.13, szansa wygranej/remisu: 87.9%"
+          "rationale": "Elo Diff: +217.1, xG Diff: +0.13, szansa 1X: 87.9%"
         },
         {
           "date": "2026-05-13",
@@ -1025,7 +1025,7 @@
           "pnl": 3.75,
           "strategy": "balanced_sharpe",
           "strategy_name": "SHARPE (Balanced)",
-          "rationale": "Elo Diff: +94.2, xG Diff: +0.32, szansa wygranej/remisu: 83.5%"
+          "rationale": "Elo Diff: +94.2, xG Diff: +0.32, szansa 1X: 83.5%"
         },
         {
           "date": "2026-05-14",
@@ -1042,7 +1042,7 @@
           "pnl": 4.13,
           "strategy": "balanced_sharpe",
           "strategy_name": "SHARPE (Balanced)",
-          "rationale": "Elo Diff: +44.1, xG Diff: +1.08, szansa wygranej/remisu: 88.4%"
+          "rationale": "Elo Diff: +44.1, xG Diff: +1.08, szansa 1X: 88.4%"
         },
         {
           "date": "2026-05-14",
@@ -1076,7 +1076,7 @@
           "pnl": 3.63,
           "strategy": "balanced_sharpe",
           "strategy_name": "SHARPE (Balanced)",
-          "rationale": "Elo Diff: +20.1, xG Diff: +1.18, szansa wygranej/remisu: 88.1%"
+          "rationale": "Elo Diff: +20.1, xG Diff: +1.18, szansa 1X: 88.1%"
         },
         {
           "date": "2026-05-17",
@@ -1093,7 +1093,7 @@
           "pnl": 3.75,
           "strategy": "balanced_sharpe",
           "strategy_name": "SHARPE (Balanced)",
-          "rationale": "Elo Diff: +85.5, xG Diff: +0.71, szansa wygranej/remisu: 87.0%"
+          "rationale": "Elo Diff: +85.5, xG Diff: +0.71, szansa 1X: 87.0%"
         },
         {
           "date": "2026-05-17",
@@ -1104,10 +1104,10 @@
           "fair_odds": 1.185744239121231,
           "model_prob": 84.3,
           "ev": 5.4,
-          "stake_pln": 11.42,
+          "stake_pln": 12.5,
           "status": "WON",
           "score": "1:0",
-          "pnl": 2.86,
+          "pnl": 3.12,
           "strategy": "balanced_sharpe",
           "strategy_name": "SHARPE (Balanced)",
           "rationale": "Pewność bez remisu: 84.3%, EV: +5.4%"
@@ -1121,13 +1121,13 @@
           "fair_odds": 1.3340502420987934,
           "model_prob": 75.0,
           "ev": 5.7,
-          "stake_pln": 6.37,
+          "stake_pln": 6.16,
           "status": "WON",
           "score": "2:0",
-          "pnl": 2.61,
+          "pnl": 2.53,
           "strategy": "balanced_sharpe",
           "strategy_name": "SHARPE (Balanced)",
-          "rationale": "Elo Diff: -9.4, xG Diff: +0.19, szansa wygranej/remisu: 75.0%"
+          "rationale": "Elo Diff: -9.4, xG Diff: +0.19, szansa 1X: 75.0%"
         },
         {
           "date": "2026-05-23",
@@ -1144,7 +1144,7 @@
           "pnl": 4.0,
           "strategy": "balanced_sharpe",
           "strategy_name": "SHARPE (Balanced)",
-          "rationale": "Elo Diff: +102.9, xG Diff: +0.57, szansa wygranej/remisu: 86.5%"
+          "rationale": "Elo Diff: +102.9, xG Diff: +0.57, szansa 1X: 86.5%"
         },
         {
           "date": "2026-05-23",
@@ -1172,10 +1172,10 @@
           "fair_odds": 1.3427248087070633,
           "model_prob": 74.5,
           "ev": 7.2,
-          "stake_pln": 10.8,
+          "stake_pln": 10.37,
           "status": "WON",
           "score": "3:0",
-          "pnl": 4.75,
+          "pnl": 4.56,
           "strategy": "balanced_sharpe",
           "strategy_name": "SHARPE (Balanced)",
           "rationale": "Dominacja gospodarzy (Pewność 74.5%, kurs 1.44)"

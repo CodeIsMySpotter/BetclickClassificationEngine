@@ -21,7 +21,7 @@ class DayReturnOptimizer(BaseSlateOptimizer):
         min_ev: float = 0.04,
         max_ev: float = 0.18,          # Asymmetric Value Trap Ceiling
         min_odds: float = 1.15,
-        max_odds: float = 1.85,
+        max_odds: float = 1.60,        # Zawężone widełki kursowe (odcina -15% strat powyżej 1.60)
         min_bet_stake_pln: float = 2.00,
     ):
         self.min_probability = min_probability
@@ -49,9 +49,13 @@ class DayReturnOptimizer(BaseSlateOptimizer):
             if opp.is_value_trap or opp.expected_value > self.max_ev:
                 continue
             
+            # Early season uncertainty check (August / September)
+            is_early = opp.event_date.month in [8, 9] if hasattr(opp.event_date, "month") else False
+            req_prob = max(self.min_probability, 0.74) if is_early else self.min_probability
+
             # Core quantitative bounds
             if (
-                opp.model_probability >= self.min_probability and
+                opp.model_probability >= req_prob and
                 self.min_ev <= opp.expected_value <= self.max_ev and
                 self.min_odds <= opp.odds <= self.max_odds
             ):
@@ -86,8 +90,14 @@ class DayReturnOptimizer(BaseSlateOptimizer):
 
         deduped: List[BetOpportunity] = []
         for e_id, opps in event_grouped.items():
+            dnb_opt = next((o for o in opps if "DNB" in o.market_name), None)
+            x1_opt = next((o for o in opps if "1X" in o.market_name), None)
             if selection_mode == "safest_pewniaki":
-                best = sorted(opps, key=lambda x: (x.model_probability, x.expected_value), reverse=True)[0]
+                # Preferencja DNB nad 1X dla ochrony kapitału (zwrot stawki przy remisie)
+                if dnb_opt and x1_opt and dnb_opt.model_probability >= 0.75:
+                    best = dnb_opt
+                else:
+                    best = sorted(opps, key=lambda x: (x.model_probability, x.expected_value), reverse=True)[0]
             elif selection_mode == "max_return":
                 best = sorted(opps, key=lambda x: (x.expected_value, x.model_probability), reverse=True)[0]
             else:  # balanced_sharpe

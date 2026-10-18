@@ -49,7 +49,10 @@ class FootballInferenceEngine(BaseSportInferenceEngine):
         self.max_ev = strat.get("max_ev", 0.18)      # Asymmetric Value Trap ceiling
         self.min_prob = strat.get("min_model_prob", 0.70)
         self.min_odds = strat.get("min_odds", 1.15)
-        self.max_odds = strat.get("max_odds", 1.85)
+        self.max_odds = strat.get("max_odds", 1.60)  # Zawężenie górnego pułapu (odcina -15% strat powyżej 1.60)
+        self.min_total_xg = strat.get("min_total_xg", 1.90)  # Filtr meczów o niskim xG
+        self.early_season_penalty = strat.get("early_season_penalty", True)
+        self.prefer_dnb = strat.get("prefer_dnb_on_tight_margin", True)
 
         self._initialize_history()
 
@@ -96,9 +99,10 @@ class FootballInferenceEngine(BaseSportInferenceEngine):
             ht.elo += self.K_FACTOR * (act - we)
             at.elo += self.K_FACTOR * ((1.0 - act) - (1.0 - we))
 
-    def _dixon_coles(self, elo_diff: float, xg_diff: float, rho: float = -0.06) -> Tuple[float, float, float]:
+    def _dixon_coles(self, elo_diff: float, xg_diff: float, rho: float = -0.06) -> Tuple[float, float, float, float]:
         lh = max(0.3, 1.45 + (0.0018 * elo_diff) + (0.35 * xg_diff))
         la = max(0.3, 1.05 - (0.0014 * elo_diff) - (0.28 * xg_diff))
+        total_xg = round(lh + la, 2)
         ph = [np.exp(-lh) * (lh**g) / math.factorial(g) for g in range(8)]
         pa = [np.exp(-la) * (la**g) / math.factorial(g) for g in range(8)]
         grid = np.outer(ph, pa)
@@ -111,7 +115,7 @@ class FootballInferenceEngine(BaseSportInferenceEngine):
         px_tot = float(np.sum(np.diag(grid)))
         pa_tot = float(np.sum(np.triu(grid, 1)))
         tot = ph_tot + px_tot + pa_tot
-        return ph_tot / tot, px_tot / tot, pa_tot / tot
+        return ph_tot / tot, px_tot / tot, pa_tot / tot, total_xg
 
     def _lgbm_prior(self, elo_diff: float, xg_diff: float, rest_diff: int = 0) -> Tuple[float, float, float]:
         zh = 0.15 + (0.0075 * elo_diff) + (0.85 * xg_diff) + (0.04 * rest_diff)
@@ -134,7 +138,7 @@ class FootballInferenceEngine(BaseSportInferenceEngine):
         a_rest = (event.event_date - at.last_match_date).days if at.last_match_date else 7
         rest_diff = int(h_rest - a_rest)
 
-        p_dc_h, p_dc_x, p_dc_a = self._dixon_coles(elo_diff, xg_diff)
+        p_dc_h, p_dc_x, p_dc_a, total_exp_xg = self._dixon_coles(elo_diff, xg_diff)
         p_lg_h, p_lg_x, p_lg_a = self._lgbm_prior(elo_diff, xg_diff, rest_diff)
 
         prob_h = (self.w_poisson * p_dc_h) + (self.w_lgbm * p_lg_h)
@@ -148,10 +152,15 @@ class FootballInferenceEngine(BaseSportInferenceEngine):
         odd_1x = event.odds.get("1X", 0.0)
         odd_dnb = event.odds.get("DNB", 0.0)
 
+        # Reguła ochronna: filtr meczów o niskim xG (tzw. "mud-matches" o wysokiej losowości)
+        is_mud_match = total_exp_xg < self.min_total_xg
+        # Reguła ochronna: wczesny sezon (sierpień-wrzesień) wymaga wyższej pewności (74%)
+        is_early_season = event.event_date.month in [8, 9] if hasattr(event.event_date, "month") else False
+        min_required_prob = 0.74 if (is_early_season and self.early_season_penalty) else self.min_prob
+
         candidates: List[BetOpportunity] = []
 
         # Helper to compute confidence score
-        # Higher probability + positive edge + low odds variance = higher confidence score
         def calc_confidence(prob: float, ev: float, odd: float) -> float:
             variance = prob * (1.0 - prob)
             base_score = (prob ** 2) * (1.0 + ev) / max(0.05, variance)
@@ -161,8 +170,9 @@ class FootballInferenceEngine(BaseSportInferenceEngine):
         if odd_1x > 1.0:
             ev_1x = (prob_1x * odd_1x) - 1.0
             fair_1x = 1.0 / prob_1x if prob_1x > 0 else 99.0
-            is_trap = ev_1x > self.max_ev
+            is_trap = (ev_1x > self.max_ev) or is_mud_match or (odd_1x > self.max_odds) or (prob_1x < min_required_prob)
             score = calc_confidence(prob_1x, ev_1x, odd_1x)
+            mud_note = f" [Niski xG meczu: {total_exp_xg:.2f}]" if is_mud_match else ""
             candidates.append(BetOpportunity(
                 event_id=event.event_id,
                 sport=SportType.FOOTBALL,
@@ -176,15 +186,19 @@ class FootballInferenceEngine(BaseSportInferenceEngine):
                 expected_value=ev_1x,
                 confidence_score=score,
                 is_value_trap=is_trap,
-                rationale=f"Elo Diff: {elo_diff:+.1f}, xG Diff: {xg_diff:+.2f}, szansa wygranej/remisu: {prob_1x*100:.1f}%"
+                rationale=f"Elo Diff: {elo_diff:+.1f}, xG Diff: {xg_diff:+.2f}, szansa 1X: {prob_1x*100:.1f}%{mud_note}"
             ))
 
         # 2. Rynek DNB (Remis = Zwrot)
         if odd_dnb > 1.0:
             ev_dnb = (prob_dnb * odd_dnb) - 1.0
             fair_dnb = 1.0 / prob_dnb if prob_dnb > 0 else 99.0
-            is_trap = ev_dnb > self.max_ev
-            score = calc_confidence(prob_dnb, ev_dnb, odd_dnb)
+            is_trap_dnb = (ev_dnb > self.max_ev) or is_mud_match or (odd_dnb > self.max_odds) or (prob_dnb < min_required_prob)
+            score_dnb = calc_confidence(prob_dnb, ev_dnb, odd_dnb)
+            # Bonus zaufania dla DNB z uwagi na ochronę kapitału przy remisie
+            if self.prefer_dnb:
+                score_dnb = round(score_dnb * 1.15, 2)
+            mud_note_dnb = f" [Niski xG meczu: {total_exp_xg:.2f}]" if is_mud_match else ""
             candidates.append(BetOpportunity(
                 event_id=event.event_id,
                 sport=SportType.FOOTBALL,
@@ -196,17 +210,18 @@ class FootballInferenceEngine(BaseSportInferenceEngine):
                 model_probability=prob_dnb,
                 fair_odds=fair_dnb,
                 expected_value=ev_dnb,
-                confidence_score=score,
-                is_value_trap=is_trap,
-                rationale=f"Pewność bez remisu: {prob_dnb*100:.1f}%, EV: {ev_dnb*100:+.1f}%"
+                confidence_score=score_dnb,
+                is_value_trap=is_trap_dnb,
+                rationale=f"Pewność bez remisu: {prob_dnb*100:.1f}%, EV: {ev_dnb*100:+.1f}%{mud_note_dnb}"
             ))
 
         # 3. Czysta 1
         if odd_h > 1.0:
             ev_h = (prob_h * odd_h) - 1.0
             fair_h = 1.0 / prob_h if prob_h > 0 else 99.0
-            is_trap = ev_h > self.max_ev
-            score = calc_confidence(prob_h, ev_h, odd_h)
+            is_trap_h = (ev_h > self.max_ev) or is_mud_match or (odd_h > self.max_odds) or (prob_h < min_required_prob)
+            score_h = calc_confidence(prob_h, ev_h, odd_h)
+            mud_note_h = f" [Niski xG meczu: {total_exp_xg:.2f}]" if is_mud_match else ""
             candidates.append(BetOpportunity(
                 event_id=event.event_id,
                 sport=SportType.FOOTBALL,
@@ -218,9 +233,9 @@ class FootballInferenceEngine(BaseSportInferenceEngine):
                 model_probability=prob_h,
                 fair_odds=fair_h,
                 expected_value=ev_h,
-                confidence_score=score,
-                is_value_trap=is_trap,
-                rationale=f"Dominacja gospodarzy (Pewność {prob_h*100:.1f}%, kurs {odd_h:.2f})"
+                confidence_score=score_h,
+                is_value_trap=is_trap_h,
+                rationale=f"Dominacja gospodarzy (Pewność {prob_h*100:.1f}%, kurs {odd_h:.2f}){mud_note_h}"
             ))
 
         return candidates

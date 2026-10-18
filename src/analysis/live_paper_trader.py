@@ -343,7 +343,7 @@ def run_ytd_historical_replay(num_matchdays: int = 15, budget_per_day: float = 5
         config = yaml.safe_load(f)
 
     optimizer = DayReturnOptimizer(
-        min_probability=0.70, min_ev=0.04, max_ev=0.18, min_odds=1.15, max_odds=1.85
+        min_probability=0.70, min_ev=0.04, max_ev=0.18, min_odds=1.15, max_odds=1.60
     )
 
     results_by_mode = {
@@ -486,7 +486,7 @@ def fetch_recent_engine_picks(
     min_ev: float = 0.04,
     max_ev: float = 0.18,
     min_odds: float = 1.15,
-    max_odds: float = 1.85,
+    max_odds: float = 1.60,
     force_refresh: bool = False
 ) -> Dict[str, Any]:
     """Gathers the exact last N engine bets by scanning completed matches backwards in time."""
