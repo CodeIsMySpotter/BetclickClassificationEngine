@@ -68,7 +68,7 @@ strategy:
   min_odds: 1.15
   max_odds: 1.60
   # Minimalne prawdopodobieństwo wygranej modelu (78% - wycina ujemny ROI z przedziału 50-75%)
-  min_model_prob: 0.78
+  min_model_prob: 0.85
   # Pułapka 'Fake Favorite': rynek 1X dopuszczony WYŁĄCZNIE do kursu 1.25 (wyżej tylko DNB lub Czysta 1)
   max_odds_1x: 1.25
   # Reguły ochronne (Anti-Variance & Anti-Trap):

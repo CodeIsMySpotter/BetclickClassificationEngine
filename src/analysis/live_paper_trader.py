@@ -496,7 +496,8 @@ def fetch_recent_engine_picks(
     force_refresh: bool = False
 ) -> Dict[str, Any]:
     """Gathers the exact last N engine bets by scanning completed matches backwards in time."""
-    cache_file = ARTIFACTS_DIR / f"recent_engine_picks_{strategy_mode}_{num_bets}.json"
+    prob_tag = int(round(min_prob * 100))
+    cache_file = ARTIFACTS_DIR / f"recent_engine_picks_{strategy_mode}_{num_bets}_p{prob_tag}.json"
     if cache_file.exists() and not force_refresh:
         try:
             with open(cache_file, "r", encoding="utf-8") as f:

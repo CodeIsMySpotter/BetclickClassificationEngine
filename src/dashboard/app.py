@@ -183,9 +183,9 @@ odds_range = st.sidebar.slider(
 min_win_prob_input = st.sidebar.slider(
     "Minimalna szansa modelu (%)",
     min_value=40.0,
-    max_value=85.0,
-    value=float(config.get("strategy", {}).get("min_model_prob", 0.70)) * 100,
-    step=5.0,
+    max_value=95.0,
+    value=float(config.get("strategy", {}).get("min_model_prob", 0.85)) * 100,
+    step=1.0,
     help="Odrzuca typy o niskim prawdopodobieństwie sukcesu, gwarantując wysoki Win Rate i ochronę kapitału."
 ) / 100.0
 
