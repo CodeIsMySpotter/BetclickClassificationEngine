@@ -1,0 +1,192 @@
+{
+  "target_date": "2026-10-24",
+  "mode": "max_return",
+  "total_budget_pln": 50.0,
+  "total_stake_pln": 49.99,
+  "count_bets": 7,
+  "avg_odds": 1.42,
+  "avg_prob": 0.795,
+  "avg_ev": 0.1194,
+  "expected_profit_pln": 5.95,
+  "expected_roi_pct": 11.91,
+  "prob_all_win": 0.1963,
+  "prob_at_least_80pct_win": 0.5616,
+  "profit_if_all_win_pln": 18.51,
+  "profit_if_one_loses_pln": 4.04,
+  "selections": [
+    {
+      "event_id": "betclic_1249788914827273",
+      "sport": "football",
+      "league_name": "Bundesliga (Niemcy)",
+      "match": "Borussia Dortmund vs Eintracht Frankfurt",
+      "date": "2026-10-24",
+      "market": "Czysta wygrana (1)",
+      "odds": 1.43,
+      "prob": 0.8162,
+      "fair_odds": 1.23,
+      "ev": 0.1671,
+      "confidence_score": 51.82,
+      "stake_pct": 14.8,
+      "stake_pln": 7.41,
+      "rationale": "Dominacja gospodarzy (Pewność 81.6%, kurs 1.43)"
+    },
+    {
+      "event_id": "betclic_1249045101150208",
+      "sport": "football",
+      "league_name": "Premier League (Anglia)",
+      "match": "Arsenal vs Everton",
+      "date": "2026-10-24",
+      "market": "Czysta wygrana (1)",
+      "odds": 1.33,
+      "prob": 0.8739,
+      "fair_odds": 1.14,
+      "ev": 0.1623,
+      "confidence_score": 80.56,
+      "stake_pct": 23.0,
+      "stake_pln": 11.52,
+      "rationale": "Dominacja gospodarzy (Pewność 87.4%, kurs 1.33)"
+    },
+    {
+      "event_id": "betclic_1249785298296832",
+      "sport": "football",
+      "league_name": "Bundesliga (Niemcy)",
+      "match": "SC Paderborn 07 vs Hamburger SV",
+      "date": "2026-10-24",
+      "market": "DNB (Remis = Zwrot)",
+      "odds": 1.61,
+      "prob": 0.7031,
+      "fair_odds": 1.42,
+      "ev": 0.132,
+      "confidence_score": 26.81,
+      "stake_pct": 7.7,
+      "stake_pln": 3.84,
+      "rationale": "Pewność bez remisu: 70.3%, EV: +13.2%"
+    },
+    {
+      "event_id": "betclic_1249045382172672",
+      "sport": "football",
+      "league_name": "Premier League (Anglia)",
+      "match": "Coventry vs Fulham",
+      "date": "2026-10-24",
+      "market": "1X (Win or Draw)",
+      "odds": 1.53,
+      "prob": 0.7387,
+      "fair_odds": 1.35,
+      "ev": 0.1302,
+      "confidence_score": 31.95,
+      "stake_pct": 9.1,
+      "stake_pln": 4.57,
+      "rationale": "Elo Diff: +40.4, xG Diff: +0.27, szansa wygranej/remisu: 73.9%"
+    },
+    {
+      "event_id": "betclic_1249785266847744",
+      "sport": "football",
+      "league_name": "Bundesliga (Niemcy)",
+      "match": "FC Koeln vs Schalke 04",
+      "date": "2026-10-24",
+      "market": "DNB (Remis = Zwrot)",
+      "odds": 1.43,
+      "prob": 0.7753,
+      "fair_odds": 1.29,
+      "ev": 0.1086,
+      "confidence_score": 38.25,
+      "stake_pct": 10.9,
+      "stake_pln": 5.47,
+      "rationale": "Pewność bez remisu: 77.5%, EV: +10.9%"
+    },
+    {
+      "event_id": "betclic_1249811852427264",
+      "sport": "football",
+      "league_name": "La Liga (Hiszpania)",
+      "match": "Racing Santander vs Espanyol",
+      "date": "2026-10-24",
+      "market": "1X (Win or Draw)",
+      "odds": 1.39,
+      "prob": 0.7699,
+      "fair_odds": 1.3,
+      "ev": 0.0702,
+      "confidence_score": 35.81,
+      "stake_pct": 10.2,
+      "stake_pln": 5.12,
+      "rationale": "Elo Diff: +95.3, xG Diff: +0.28, szansa wygranej/remisu: 77.0%"
+    },
+    {
+      "event_id": "betclic_1249797122043904",
+      "sport": "football",
+      "league_name": "Ligue 1 (Francja)",
+      "match": "Toulouse vs Troyes",
+      "date": "2026-10-24",
+      "market": "DNB (Remis = Zwrot)",
+      "odds": 1.2,
+      "prob": 0.8878,
+      "fair_odds": 1.13,
+      "ev": 0.0654,
+      "confidence_score": 84.31,
+      "stake_pct": 24.1,
+      "stake_pln": 12.06,
+      "rationale": "Pewność bez remisu: 88.8%, EV: +6.5%"
+    }
+  ],
+  "daily_parlays": [
+    {
+      "leg1": {
+        "match": "Toulouse vs Troyes",
+        "market": "DNB (Remis = Zwrot)",
+        "odds": 1.2,
+        "prob": 0.8878072571652584
+      },
+      "leg2": {
+        "match": "Arsenal vs Everton",
+        "market": "Czysta wygrana (1)",
+        "odds": 1.33,
+        "prob": 0.873911223578863
+      },
+      "combined_odds": 1.6,
+      "combined_prob": 0.7759,
+      "ev": 0.2414,
+      "stake_pln": 5.0,
+      "expected_profit_pln": 1.21,
+      "potential_return_pln": 8.0
+    },
+    {
+      "leg1": {
+        "match": "Toulouse vs Troyes",
+        "market": "DNB (Remis = Zwrot)",
+        "odds": 1.2,
+        "prob": 0.8878072571652584
+      },
+      "leg2": {
+        "match": "Borussia Dortmund vs Eintracht Frankfurt",
+        "market": "Czysta wygrana (1)",
+        "odds": 1.43,
+        "prob": 0.8161773622658363
+      },
+      "combined_odds": 1.72,
+      "combined_prob": 0.7246,
+      "ev": 0.2463,
+      "stake_pln": 5.0,
+      "expected_profit_pln": 1.23,
+      "potential_return_pln": 8.6
+    },
+    {
+      "leg1": {
+        "match": "Toulouse vs Troyes",
+        "market": "DNB (Remis = Zwrot)",
+        "odds": 1.2,
+        "prob": 0.8878072571652584
+      },
+      "leg2": {
+        "match": "FC Koeln vs Schalke 04",
+        "market": "DNB (Remis = Zwrot)",
+        "odds": 1.43,
+        "prob": 0.7752707202122957
+      },
+      "combined_odds": 1.72,
+      "combined_prob": 0.6883,
+      "ev": 0.1839,
+      "stake_pln": 5.0,
+      "expected_profit_pln": 0.92,
+      "potential_return_pln": 8.6
+    }
+  ]
+}
